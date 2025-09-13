@@ -3,6 +3,16 @@ const cors = require('cors');
 const PDFDocument = require('pdfkit');
 
 const app = express();
+
+// ✅ Middleware CORS global
+app.use(cors({
+  origin: '*', // ← en prod, remplace * par l'URL de ton front (ex: https://figma.make...)
+  methods: ['GET', 'POST', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+}));
+
+
+
 const port = process.env.PORT || 3001;
 
 app.use(cors());
@@ -87,3 +97,5 @@ app.post('/api/pdfkit', (req, res) => {
 app.listen(port, () => {
   console.log(`✅ Serveur PDFKit en ligne sur http://localhost:${port}`);
 });
+
+app.options('/api/pdfkit', cors());
