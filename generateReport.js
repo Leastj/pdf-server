@@ -414,12 +414,13 @@ rows35.forEach((row, i) => {
   drawFooter(doc);
 
   // Clôture du document
-  doc.end();
+ // doc.end();
 
   return doc;
 }
 
 module.exports = generateReport;
+
 
 
 

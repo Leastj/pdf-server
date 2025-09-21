@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-const generateReport = require("./generateReport");  // ✅ doit pointer vers ton fichier
+const generateReport = require("./generateReport");
 
 const app = express();
 
@@ -10,8 +10,9 @@ app.use(express.json());
 app.post("/api/pdfkit", (req, res) => {
   try {
     const data = req.body;
+    console.log("📥 Données reçues:", data);  // ✅ pour voir si le front envoie bien
 
-    const doc = generateReport(data); // ✅ retourne un doc PDFKit
+    const doc = generateReport(data);
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=rapport.pdf");
@@ -19,10 +20,12 @@ app.post("/api/pdfkit", (req, res) => {
     doc.pipe(res);
     doc.end();
   } catch (err) {
-    console.error("❌ Erreur PDF tralal :", err);
-    res.status(500).json({ error: "Erreur génération PDF tralala" });
+    console.error("❌ Erreur PDF:", err);  // ✅ log complet côté serveur
+    res.status(500).json({ error: err.message, stack: err.stack }); 
   }
 });
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`🚀 Serveur sur http://localhost:${PORT}`));
