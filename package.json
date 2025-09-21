@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "test-pdf": "node test-pdf.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

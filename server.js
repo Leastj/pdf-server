@@ -1,28 +1,26 @@
 const express = require("express");
 const cors = require("cors");
-const generateReport = require("./generateReport");
+const generateReport = require("./generateReport");  // ✅ doit pointer vers ton fichier
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
 
-// Endpoint PDF
 app.post("/api/pdfkit", (req, res) => {
   try {
     const data = req.body;
 
-    // On génère un nouveau doc
-    const doc = generateReport(data);
+    const doc = generateReport(data); // ✅ retourne un doc PDFKit
 
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=rapport.pdf");
 
-    doc.pipe(res);   // on envoie directement le PDF au client
+    doc.pipe(res);
     doc.end();
   } catch (err) {
-    console.error("❌ Erreur PDF:", err);
-    res.status(500).json({ error: "Erreur génération PDF" });
+    console.error("❌ Erreur PDF tralal :", err);
+    res.status(500).json({ error: "Erreur génération PDF tralala" });
   }
 });
 
