@@ -446,6 +446,7 @@ drawFooter(doc);
 // 5 - Évaluation de la qualité de maintenance
 // =====================
 
+// on s’assure que la section 5 commence après la fin réelle de la 4
 let sec5TitleY = ensureSpace(sec4Y + 80, 40);
 
 doc.font(BOLD).fontSize(12).fillColor(ORANGE)
@@ -453,14 +454,10 @@ doc.font(BOLD).fontSize(12).fillColor(ORANGE)
 
 let sec5Y = sec5TitleY + 30;
 
-// Affiche les paragraphes d’évaluation (liste dynamique)
-if (Array.isArray(data.maintenance_quality_evaluation) && data.maintenance_quality_evaluation.length > 0) {
-  data.maintenance_quality_evaluation.forEach((paragraph, i) => {
-    sec5Y = ensureSpace(sec5Y, 40);
-    doc.font(REG).fontSize(8).fillColor(BLUE)
-       .text(`${i + 1}. ${paragraph}`, LEFT, sec5Y, { width: PAGE_W - 40, align: "justify" });
-    sec5Y += 25;
-  });
+// Vérifie si le texte existe
+if (data.maintenance_quality_evaluation && data.maintenance_quality_evaluation.trim() !== "") {
+  doc.font(REG).fontSize(8).fillColor(BLUE)
+     .text(data.maintenance_quality_evaluation, LEFT, sec5Y, { width: PAGE_W - 40, align: "justify" });
 } else {
   doc.font(REG).fontSize(8).fillColor(BLUE)
      .text("Aucune observation enregistrée pour cette section.", LEFT, sec5Y);
@@ -471,6 +468,7 @@ drawFooter(doc);
 
 // Clôture du document
 return doc;
+
 
 }
 
