@@ -442,13 +442,6 @@ if (Array.isArray(data.installation_evaluation) && data.installation_evaluation.
 // Footer standard
 drawFooter(doc);
 
-// =====================
-// 5 - Évaluation de la qualité de maintenance
-// =====================
-
-// on s'assure que la section 5 commence après la fin réelle de la 4
-let sec5TitleY = ensureSpace(sec4Y + 50, 30);
-
 doc.font(BOLD).fontSize(12).fillColor(ORANGE)
    .text("5 - Évaluation de la qualité de maintenance", LEFT, sec5TitleY);
 
@@ -467,10 +460,7 @@ if (Array.isArray(data.maintenance_quality_evaluation) && data.maintenance_quali
      .text("Aucune observation enregistrée pour cette section.", LEFT, sec5Y);
 }
 
-drawFooter(doc);
-
-
-// Footer de la page (si besoin)
+// Footer standard
 drawFooter(doc);
 
 
