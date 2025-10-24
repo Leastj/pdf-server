@@ -446,7 +446,6 @@ drawFooter(doc);
 // 5 - Évaluation de la qualité de maintenance
 // =====================
 
-// on s’assure que la section 5 commence après la fin réelle de la 4
 let sec5TitleY = ensureSpace(sec4Y + 80, 40);
 
 doc.font(BOLD).fontSize(12).fillColor(ORANGE)
@@ -454,14 +453,83 @@ doc.font(BOLD).fontSize(12).fillColor(ORANGE)
 
 let sec5Y = sec5TitleY + 30;
 
-// Vérifie si le texte existe
-if (data.maintenance_quality_evaluation && data.maintenance_quality_evaluation.trim() !== "") {
-  doc.font(REG).fontSize(8).fillColor(BLUE)
-     .text(data.maintenance_quality_evaluation, LEFT, sec5Y, { width: PAGE_W - 40, align: "justify" });
+// Affiche les paragraphes d’évaluation (liste dynamique)
+if (Array.isArray(data.maintenance_quality_evaluation) && data.maintenance_quality_evaluation.length > 0) {
+  data.maintenance_quality_evaluation.forEach((paragraph, i) => {
+    sec5Y = ensureSpace(sec5Y, 40);
+    doc.font(REG).fontSize(8).fillColor(BLUE)
+       .text(`${i + 1}. ${paragraph}`, LEFT, sec5Y, { width: PAGE_W - 40, align: "justify" });
+    sec5Y += 25;
+  });
 } else {
   doc.font(REG).fontSize(8).fillColor(BLUE)
      .text("Aucune observation enregistrée pour cette section.", LEFT, sec5Y);
 }
+
+// Footer standard
+drawFooter(doc);
+
+// =====================
+// 6 - Constat
+// =====================
+
+// Nouvelle page pour le constat
+doc.addPage();
+
+let sec6TitleY = 80;
+doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+   .text("6 - Constat", LEFT, sec6TitleY);
+
+let sec6Y = sec6TitleY + 30;
+
+// Liste des sous-sections avec leurs clés
+const findingsSections = [
+  { label: "A. En machinerie", key: "findings_machinery" },
+  { label: "B. En gaine", key: "findings_shaft" },
+  { label: "C. Aux paliers", key: "findings_landings" },
+  { label: "D. En cabine", key: "findings_cabin" },
+  { label: "E. Sur le toit de cabine", key: "findings_cabin_roof" },
+  { label: "F. Sous la cabine", key: "findings_cabin_under" },
+];
+
+// Boucle sur chaque sous-section
+findingsSections.forEach(section => {
+  sec6Y = ensureSpace(sec6Y + 25, 40);
+
+  // Sous-titre (A., B., etc.)
+  doc.font(BOLD).fontSize(10).fillColor(BLUE)
+     .text(section.label, LEFT, sec6Y);
+
+  sec6Y += 25;
+
+  const content = data[section.key];
+
+  if (Array.isArray(content) && content.length > 0) {
+    content.forEach((paragraph, i) => {
+      sec6Y = ensureSpace(sec6Y, 40);
+
+      // Calcul hauteur du texte
+      const textHeight = doc.heightOfString(paragraph, { width: PAGE_W - 60 });
+      const blockHeight = textHeight + 20; // padding vertical
+
+      // Fond gris clair derrière le texte
+      doc.save();
+      doc.rect(LEFT, sec6Y, PAGE_W - 40, blockHeight)
+         .fill("#f7f7f7");
+      doc.restore();
+
+      // Texte bleu
+      doc.font(REG).fontSize(8).fillColor(BLUE)
+         .text(paragraph, LEFT + 10, sec6Y + 10, { width: PAGE_W - 60, align: "left" });
+
+      sec6Y += blockHeight + 10;
+    });
+  } else {
+    doc.font(REG).fontSize(8).fillColor(BLUE)
+       .text("Aucune observation enregistrée pour cette sous-section.", LEFT + 20, sec6Y);
+    sec6Y += 25;
+  }
+});
 
 // Footer standard
 drawFooter(doc);
