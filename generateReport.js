@@ -442,6 +442,12 @@ if (Array.isArray(data.installation_evaluation) && data.installation_evaluation.
 // Footer standard
 drawFooter(doc);
 
+// =====================
+// 5 - Évaluation de la qualité de maintenance
+// =====================
+
+let sec5TitleY = ensureSpace(sec4Y + 80, 40);
+
 doc.font(BOLD).fontSize(12).fillColor(ORANGE)
    .text("5 - Évaluation de la qualité de maintenance", LEFT, sec5TitleY);
 
@@ -463,11 +469,9 @@ if (Array.isArray(data.maintenance_quality_evaluation) && data.maintenance_quali
 // Footer standard
 drawFooter(doc);
 
+// Clôture du document
+return doc;
 
-  // Clôture du document
- // doc.end();
-
-  return doc;
 }
 
 module.exports = generateReport;
