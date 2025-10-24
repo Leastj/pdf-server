@@ -410,8 +410,43 @@ rows35.forEach((row, i) => {
   drawRow(row[0], row[1], sec35Y, i % 2 === 0);
   sec35Y += ROW_H;
 });
-  // Footer de la DERNIÈRE page
-  drawFooter(doc);
+
+
+
+drawFooter(doc);
+
+// =====================
+// 4 - Évaluation de l’installation
+// =====================
+
+// Position juste après la section 3.5
+let sec4TitleY = ensureSpace(sec35Y + 40, 20);
+doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+   .text("4 - Évaluation de l’installation", LEFT, sec4TitleY);
+
+let sec4Y = sec4TitleY + 30;
+
+// Affiche la liste dynamique des observations
+if (Array.isArray(data.installation_evaluation) && data.installation_evaluation.length > 0) {
+  data.installation_evaluation.forEach((paragraph, i) => {
+    sec4Y = ensureSpace(sec4Y, 40);
+    doc.font(REG).fontSize(8).fillColor(BLUE)
+       .text(`${i + 1}. ${paragraph}`, LEFT, sec4Y, { width: PAGE_W - 40, align: "justify" });
+    sec4Y += 25;
+  });
+} else {
+  doc.font(REG).fontSize(8).fillColor(BLUE)
+     .text("Aucune observation enregistrée pour cette section.", LEFT, sec4Y);
+}
+
+// Footer standard
+drawFooter(doc);
+
+
+
+// Footer de la page (si besoin)
+drawFooter(doc);
+
 
   // Clôture du document
  // doc.end();

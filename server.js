@@ -10,7 +10,7 @@ app.use(express.json());
 app.post("/api/pdfkit", (req, res) => {
   try {
     const data = req.body;
-    console.log("📥 Données reçues:", data);  // ✅ pour voir si le front envoie bien
+    console.log("📥 Données reçues:", data);
 
     const doc = generateReport(data);
 
@@ -20,10 +20,11 @@ app.post("/api/pdfkit", (req, res) => {
     doc.pipe(res);
     doc.end();
   } catch (err) {
-    console.error("❌ Erreur PDF:", err);  // ✅ log complet côté serveur
-    res.status(500).json({ error: err.message, stack: err.stack }); 
+    console.error("❌ Erreur PDF:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
+
 
 
 
