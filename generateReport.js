@@ -36,9 +36,8 @@ Toute reproduction et/ou diffusion même partielle sans accord préalable d’E 
 // Génération du PDF
 // ============================
 async function generateReport(data) {
-    if (!doc) {
-    doc = new PDFDocument({ size: "A4", margin: 40 });
-  }
+  // ✅ On crée toujours un nouveau document PDF pour chaque rapport
+  const doc = new PDFDocument({ size: "A4", margin: 40 });
 
   const BLUE = "#144176";
   const ORANGE = "#f97415";
@@ -565,16 +564,20 @@ drawFooter(doc);
             y += photoSize + 60;
           }
 
-          try {
-            const response = await fetch(photo.photo_url);
-            const buffer = await response.arrayBuffer();
-            const imageBuffer = Buffer.from(buffer);
-            doc.image(imageBuffer, x, y, { width: photoSize, height: photoSize });
-          } catch (err) {
-            console.error("❌ Erreur chargement image:", photo.photo_url, err);
-            doc.font(REG).fontSize(8).fillColor("red")
-              .text("Image non disponible", x, y + photoSize / 2);
-          }
+try {
+  const response = await fetch(photo.photo_url);
+  if (!response.ok) throw new Error(`Image non accessible: ${response.status}`);
+  const buffer = await response.arrayBuffer();
+  const imageBuffer = Buffer.from(buffer);
+  doc.image(imageBuffer, x, y, { width: photoSize, height: photoSize });
+} catch (err) {
+  console.warn("⚠️ Erreur lors du chargement de l’image :", photo.photo_url, err.message);
+  doc
+    .fontSize(8)
+    .fillColor("red")
+    .text("Image non disponible", x, y, { width: photoSize, align: "center" });
+}
+
 
           doc.font(REG).fontSize(8).fillColor(BLUE)
             .text(photo.photo_comment || "—", x, y + photoSize + 10, { width: photoSize, align: "center" });
