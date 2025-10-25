@@ -1,69 +1,90 @@
+// ==========================
+// 📦 Import des dépendances
+// ==========================
 const express = require("express");
 const cors = require("cors");
-const generateReport = require("./generateReport");
-const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const sharp = require("sharp"); // ✅ import Sharp
+const multer = require("multer");
+const sharp = require("sharp");
+const generateReport = require("./generateReport");
 
 const app = express();
 
 // ==========================
-// ⚙️ Middleware général
+// ⚙️ Configuration CORS
 // ==========================
-app.use(cors());
+const allowedOrigins = [
+  "https://lint-shop-36442167.figma.site", // ton app figma
+  "http://localhost:5173",                 // dev local
+  "https://pdf-server-qimr.onrender.com"   // ton backend Render
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn("❌ CORS refusé pour:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+}));
+
+// ==========================
+// 📄 Middleware global
+// ==========================
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 // ==========================
-// 📁 Vérifie que le dossier "uploads" existe sinon le crée
+// 📸 Upload et compression des photos
 // ==========================
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
 
-// ==========================
-// 📸 1. Configuration Multer
-// ==========================
+// Crée le dossier d’upload s’il n’existe pas
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
+
+// Configuration Multer
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "uploads/"),
+  destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname)),
 });
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // max 5 Mo
+  limits: { fileSize: 5 * 1024 * 1024 }, // max 5MB
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowedTypes.includes(file.mimetype)) {
-      return cb(new Error("Format de fichier non supporté. Seules les images JPG, PNG et WEBP sont autorisées."));
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.mimetype)) {
+      return cb(new Error("Format non supporté (JPG, PNG, WEBP uniquement)."));
     }
     cb(null, true);
   },
 });
 
-// ==========================
-// 📦 2. Route Upload + Compression Sharp
-// ==========================
+// Endpoint d’upload avec compression Sharp
 app.post("/api/upload", upload.single("photo"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "Aucun fichier reçu" });
 
     const inputPath = req.file.path;
-    const outputPath = `uploads/compressed-${Date.now()}.jpg`;
+    const compressedName = `compressed-${Date.now()}${path.extname(req.file.originalname)}`;
+    const outputPath = path.join(uploadDir, compressedName);
 
-    // Compression via Sharp
+    // Compression et redimensionnement
     await sharp(inputPath)
-      .resize({ width: 1600, withoutEnlargement: true }) // redimensionne si trop grand
-      .jpeg({ quality: 70 }) // compression sans perte visible
+      .resize({ width: 1600, withoutEnlargement: true })
+      .jpeg({ quality: 70 })
       .toFile(outputPath);
 
-    // Supprime le fichier original
-    fs.unlinkSync(inputPath);
+    fs.unlinkSync(inputPath); // supprime l’original
 
     // Génère l’URL publique
-    const fileUrl = `${req.protocol}://${req.get("host")}/${outputPath}`;
-    console.log("✅ Photo compressée et enregistrée :", fileUrl);
+    const fileUrl = `${req.protocol}://${req.get("host")}/uploads/${compressedName}`;
+    console.log("✅ Photo uploadée et compressée :", fileUrl);
 
     res.json({ url: fileUrl });
   } catch (err) {
@@ -72,16 +93,16 @@ app.post("/api/upload", upload.single("photo"), async (req, res) => {
   }
 });
 
-// Permet d’accéder aux fichiers uploadés depuis le navigateur
-app.use("/uploads", express.static("uploads"));
+// Rendre le dossier /uploads public
+app.use("/uploads", express.static(uploadDir));
 
 // ==========================
-// 🧾 3. Endpoint de génération PDF
+// 🧾 Endpoint de génération du PDF
 // ==========================
 app.post("/api/pdfkit", async (req, res) => {
   try {
     const data = req.body;
-    console.log("📥 Données reçues:", data);
+    console.log("📥 Données reçues pour le PDF:", Object.keys(data));
 
     const doc = await generateReport(data);
 
@@ -97,7 +118,7 @@ app.post("/api/pdfkit", async (req, res) => {
 });
 
 // ==========================
-// 🚀 4. Lancement du serveur
+// 🚀 Lancement du serveur
 // ==========================
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Serveur sur http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Serveur en ligne sur http://localhost:${PORT}`));
