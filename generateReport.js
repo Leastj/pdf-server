@@ -583,69 +583,92 @@ findingsSections.forEach(section => {
 drawFooter(doc);
 
 // ======================
-  // 7 - Photographies des installations
-  // ======================
-  doc.addPage();
-  let sec7Y = 80;
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
-    .text("7 - Photographies des installations", LEFT, sec7Y);
-  sec7Y += 40;
+// 7 - Photographies des installations
+// ======================
+doc.addPage();
+let sec7Y = 80;
 
-  if (Array.isArray(data.photo_blocks) && data.photo_blocks.length > 0) {
-    for (const [blockIndex, block] of data.photo_blocks.entries()) {
-      sec7Y = ensureSpace(sec7Y, 100);
-      doc.font(BOLD).fontSize(10).fillColor(BLUE)
-        .text(`Groupe ${blockIndex + 1} : ${block.constat_type || "Type non spécifié"}`, LEFT, sec7Y);
-      sec7Y += 20;
+// 🟧 Titre principal
+doc.font(BOLD).fontSize(16).fillColor(ORANGE)
+  .text("7 - Photographies des installations", LEFT, sec7Y);
+sec7Y += 40;
 
-      if (Array.isArray(block.photos) && block.photos.length > 0) {
-        const photoSize = 120;
-        const marginX = 30;
-        let x = LEFT;
-        let y = sec7Y;
+if (Array.isArray(data.photo_blocks) && data.photo_blocks.length > 0) {
+  for (const [blockIndex, block] of data.photo_blocks.entries()) {
+    sec7Y = ensureSpace(sec7Y, 100);
 
-        for (const photo of block.photos) {
-          if (!photo.photo_url) continue;
+    // 🔹 Titre du groupe
+    doc.font(BOLD).fontSize(12).fillColor(BLUE)
+      .text(`Groupe ${blockIndex + 1} : ${block.constat_type || "Type non spécifié"}`, LEFT, sec7Y);
+    sec7Y += 20;
 
-          if (x + photoSize > PAGE_W - 50) {
-            x = LEFT;
-            y += photoSize + 60;
-          }
+    if (Array.isArray(block.photos) && block.photos.length > 0) {
+      const FRAME_W = 120; // largeur max de la case
+      const FRAME_H = 180; // hauteur max (pour gérer le vertical)
+      const marginX = 30;
+      let x = LEFT;
+      let y = sec7Y;
 
-try {
-  const response = await fetch(photo.photo_url);
-  if (!response.ok) throw new Error(`Image non accessible: ${response.status}`);
-  const buffer = await response.arrayBuffer();
-  const imageBuffer = Buffer.from(buffer);
-  doc.image(imageBuffer, x, y, { width: photoSize, height: photoSize });
-} catch (err) {
-  console.warn("⚠️ Erreur lors du chargement de l’image :", photo.photo_url, err.message);
-  doc
-    .fontSize(8)
-    .fillColor("red")
-    .text("Image non disponible", x, y, { width: photoSize, align: "center" });
-}
+      for (const photo of block.photos) {
+        if (!photo.photo_url) continue;
 
-
-          doc.font(REG).fontSize(8).fillColor(BLUE)
-            .text(photo.photo_comment || "—", x, y + photoSize + 10, { width: photoSize, align: "center" });
-
-          x += photoSize + marginX;
+        // Saut à la ligne si dépassement horizontal
+        if (x + FRAME_W > PAGE_W - 50) {
+          x = LEFT;
+          y += FRAME_H + 70;
         }
 
-        sec7Y = y + photoSize + 70;
-      } else {
-        doc.font(REG).fontSize(8).fillColor(BLUE)
-          .text("Aucune photographie pour ce groupe.", LEFT, sec7Y);
-        sec7Y += 25;
-      }
-    }
-  } else {
-    doc.font(REG).fontSize(8).fillColor(BLUE)
-      .text("Aucune photographie enregistrée pour cette section.", LEFT, sec7Y);
-  }
+        try {
+          const response = await fetch(photo.photo_url);
+          if (!response.ok) throw new Error(`Image non accessible: ${response.status}`);
+          const buffer = await response.arrayBuffer();
+          const imageBuffer = Buffer.from(buffer);
 
-  drawFooter(doc);
+          // 🖼️ Ajustement de la taille sans déformation
+          const img = doc.openImage(imageBuffer);
+          let imgW = img.width;
+          let imgH = img.height;
+
+          const ratio = Math.min(FRAME_W / imgW, FRAME_H / imgH);
+          imgW *= ratio;
+          imgH *= ratio;
+
+          // Centrer l’image dans sa “case” invisible
+          const offsetX = x + (FRAME_W - imgW) / 2;
+          const offsetY = y + (FRAME_H - imgH) / 2;
+
+          doc.image(imageBuffer, offsetX, offsetY, { width: imgW, height: imgH });
+
+        } catch (err) {
+          console.warn("⚠️ Erreur lors du chargement de l’image :", photo.photo_url, err.message);
+          doc
+            .fontSize(8)
+            .fillColor("red")
+            .text("Image non disponible", x, y, { width: FRAME_W, align: "center" });
+        }
+
+        // 📝 Légende / commentaire
+        doc.font(REG).fontSize(8).fillColor(BLUE)
+          .text(photo.photo_comment || "—", x, y + FRAME_H + 10, { width: FRAME_W, align: "center" });
+
+        // Avancer à droite pour la photo suivante
+        x += FRAME_W + marginX;
+      }
+
+      sec7Y = y + FRAME_H + 70;
+    } else {
+      doc.font(REG).fontSize(9).fillColor(BLUE)
+        .text("Aucune photographie pour ce groupe.", LEFT, sec7Y);
+      sec7Y += 25;
+    }
+  }
+} else {
+  doc.font(REG).fontSize(9).fillColor(BLUE)
+    .text("Aucune photographie enregistrée pour cette section.", LEFT, sec7Y);
+}
+
+drawFooter(doc);
+
 
 // ==========================================
 // 🧰 SECTION 8 — Prestations de maintenance
@@ -661,15 +684,13 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
   let y = doc.y + 40;
 
-  // 🟦 Titre principal
-  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
-    .text(
-      '8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat',
-      MARGIN_X,
-      y,
-      { width: PAGE_W - MARGIN_X * 2 }
-    );
-  y = doc.y + 25;
+  // 🟧 Section 8 - Titre
+  doc
+    .font(BOLD)
+    .fontSize(16)
+    .fillColor(ORANGE)
+    .text("8 - Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat", LEFT, y);
+  y += 28;
 
   // Fonction pour forcer un saut de page
   const checkPageBreak = (estimatedHeight = 100) => {
@@ -682,42 +703,40 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   for (const task of data.maintenance_tasks) {
     // 🔸 Localisation
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+    doc.font(BOLD).fontSize(13).fillColor(ORANGE)
       .text(`Localisation : ${task.location || '-'}`, MARGIN_X, y);
-    y = doc.y + 10;
+    y = doc.y + 8;
 
     if (task.elements && task.elements.length > 0) {
       for (const el of task.elements) {
         // 🔧 Élément
         checkPageBreak(30);
-        doc.font(BOLD).fontSize(13).fillColor(TITLE_COLOR)
+        doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
           .text(`Élément : ${el.element || '-'}`, MARGIN_X + 15, y);
-        y = doc.y + 10;
+        y = doc.y + 8;
 
         if (el.defects && el.defects.length > 0) {
           for (const def of el.defects) {
             const BOX_X = MARGIN_X + 30;
             const BOX_W = PAGE_W - MARGIN_X * 2 - 30;
 
-            // Données textes
             const defectText = def.defect || '-';
             const commentText = def.comment || '-';
             const dueText = def.max_due_date || '-';
             const doneText = def.completion_date || '-';
 
-            // Calcul de la hauteur estimée du bloc
             const leftH =
               doc.heightOfString(`${defectText}\n${commentText}`, { width: BOX_W / 2 - 30 }) + 50;
             const rightH =
               doc.heightOfString(`${dueText}\n${doneText}`, { width: BOX_W / 2 - 30 }) + 50;
             const BOX_H = Math.max(leftH, rightH, 90);
 
-            // 🧩 Vérifier que le bloc entier tient sur la page
+            // Empêche un bloc d'être coupé
             checkPageBreak(BOX_H + 10);
 
             // 🩶 Bloc gris clair
             doc.save()
-              .roundedRect(BOX_X, y, BOX_W, BOX_H, 8)
+              .roundedRect(BOX_X, y, BOX_W, BOX_H, 10)
               .fill(GRAY_BG)
               .restore();
 
@@ -726,14 +745,14 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
             let textY = y + BOX_PADDING;
 
             // 🔹 Colonne gauche
-            doc.font(BOLD).fontSize(11).fillColor(TITLE_COLOR)
+            doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
               .text('Défaut', textX, textY);
-            doc.font(REG).fillColor('black')
+            doc.font(REG).fontSize(9).fillColor('black')
               .text(defectText, textX, doc.y + 2, { width: LEFT_W });
 
-            doc.font(BOLD).fillColor(TITLE_COLOR)
+            doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
               .text('Commentaire', textX, doc.y + 8);
-            doc.font(REG).fillColor('black')
+            doc.font(REG).fontSize(9).fillColor('black')
               .text(commentText, textX, doc.y + 2, { width: LEFT_W });
 
             // 🔹 Colonne droite
@@ -741,14 +760,14 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
             const RIGHT_W = BOX_W / 2 - 20;
             textY = y + BOX_PADDING;
 
-            doc.font(BOLD).fillColor(TITLE_COLOR)
+            doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
               .text('Délai souhaité', rightX, textY);
-            doc.font(REG).fillColor('black')
+            doc.font(REG).fontSize(9).fillColor('black')
               .text(dueText, rightX, doc.y + 2, { width: RIGHT_W });
 
-            doc.font(BOLD).fillColor(TITLE_COLOR)
+            doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
               .text('Date de réalisation', rightX, doc.y + 8);
-            doc.font(REG).fillColor('black')
+            doc.font(REG).fontSize(9).fillColor('black')
               .text(doneText, rightX, doc.y + 2, { width: RIGHT_W });
 
             y += BOX_H + 12;
@@ -759,12 +778,11 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
       }
     }
 
-    y += 20;
-
-    // 🧾 Saut de page entre localisations
+    y += 18;
     checkPageBreak(60);
   }
 }
+
 
 
 
