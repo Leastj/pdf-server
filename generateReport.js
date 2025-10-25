@@ -1,6 +1,7 @@
 
 const PDFDocument = require("pdfkit");
 const path = require("path");
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args)); // ✅ fetch CommonJS
 
 
 // ============================
@@ -34,8 +35,8 @@ Toute reproduction et/ou diffusion même partielle sans accord préalable d’E 
 // ============================
 // Génération du PDF
 // ============================
-function generateReport(data, doc) {
-  if (!doc) {
+async function generateReport(data) {
+    if (!doc) {
     doc = new PDFDocument({ size: "A4", margin: 40 });
   }
 
@@ -534,10 +535,72 @@ findingsSections.forEach(section => {
 // Footer standard
 drawFooter(doc);
 
-// Clôture du document
-return doc;
+// ======================
+  // 7 - Photographies des installations
+  // ======================
+  doc.addPage();
+  let sec7Y = 80;
+  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+    .text("7 - Photographies des installations", LEFT, sec7Y);
+  sec7Y += 40;
 
+  if (Array.isArray(data.photo_blocks) && data.photo_blocks.length > 0) {
+    for (const [blockIndex, block] of data.photo_blocks.entries()) {
+      sec7Y = ensureSpace(sec7Y, 100);
+      doc.font(BOLD).fontSize(10).fillColor(BLUE)
+        .text(`Groupe ${blockIndex + 1} : ${block.constat_type || "Type non spécifié"}`, LEFT, sec7Y);
+      sec7Y += 20;
 
+      if (Array.isArray(block.photos) && block.photos.length > 0) {
+        const photoSize = 120;
+        const marginX = 30;
+        let x = LEFT;
+        let y = sec7Y;
+
+        for (const photo of block.photos) {
+          if (!photo.photo_url) continue;
+
+          if (x + photoSize > PAGE_W - 50) {
+            x = LEFT;
+            y += photoSize + 60;
+          }
+
+          try {
+            const response = await fetch(photo.photo_url);
+            const buffer = await response.arrayBuffer();
+            const imageBuffer = Buffer.from(buffer);
+            doc.image(imageBuffer, x, y, { width: photoSize, height: photoSize });
+          } catch (err) {
+            console.error("❌ Erreur chargement image:", photo.photo_url, err);
+            doc.font(REG).fontSize(8).fillColor("red")
+              .text("Image non disponible", x, y + photoSize / 2);
+          }
+
+          doc.font(REG).fontSize(8).fillColor(BLUE)
+            .text(photo.photo_comment || "—", x, y + photoSize + 10, { width: photoSize, align: "center" });
+
+          x += photoSize + marginX;
+        }
+
+        sec7Y = y + photoSize + 70;
+      } else {
+        doc.font(REG).fontSize(8).fillColor(BLUE)
+          .text("Aucune photographie pour ce groupe.", LEFT, sec7Y);
+        sec7Y += 25;
+      }
+    }
+  } else {
+    doc.font(REG).fontSize(8).fillColor(BLUE)
+      .text("Aucune photographie enregistrée pour cette section.", LEFT, sec7Y);
+  }
+
+  drawFooter(doc);
+
+  // ======================
+  // FIN DU DOCUMENT
+  // ======================
+  doc.end();
+  return doc;
 }
 
 module.exports = generateReport;
