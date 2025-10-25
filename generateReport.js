@@ -160,10 +160,51 @@ const pillY = refY + refLabelH + 5;
 doc.save().roundedRect(pillX, pillY, pillW, pillH, 4).fill('#ffffff').restore();
 doc.font(BOLD).fillColor(BLUE).text(data.installation_ref, pillX, pillY + 5, { width: pillW, align: 'center' });
 
-  // Image placeholder
-  const IMG_W = 174, IMG_H = 213, IMG_X = LEFT + (PAGE_W - IMG_W) / 2, IMG_Y = PANEL_Y + PANEL_H + 16;
+  // =====================
+// Image de couverture (remplace le placeholder)
+// =====================
+
+// Position réservée
+const IMG_W = 174;
+const IMG_H = 213;
+const IMG_X = LEFT + (PAGE_W - IMG_W) / 2;
+const IMG_Y = PANEL_Y + PANEL_H + 16;
+
+// Recherche la photo marquée comme "isCover"
+let coverPhotoUrl = null;
+if (Array.isArray(data.photo_blocks)) {
+  const cover = data.photo_blocks
+    .flatMap(block => block.photos || [])
+    .find(photo => photo.isCover && photo.photo_url);
+  if (cover) coverPhotoUrl = cover.photo_url;
+}
+
+if (coverPhotoUrl) {
+  try {
+    const response = await fetch(coverPhotoUrl);
+    if (!response.ok) throw new Error(`Image not accessible: ${response.status}`);
+    const buffer = await response.arrayBuffer();
+    const imageBuffer = Buffer.from(buffer);
+
+    // ✅ Affiche l'image sans déformation
+    doc.save();
+    doc.roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, 4).clip();
+    doc.image(imageBuffer, IMG_X, IMG_Y, {
+      fit: [IMG_W, IMG_H],     // conserve le ratio
+      align: 'center',
+      valign: 'center'
+    });
+    doc.restore();
+  } catch (err) {
+    console.warn("⚠️ Error loading cover image:", coverPhotoUrl, err.message);
+    doc.save().roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, 4).fill('#e5e5e5').restore();
+    doc.font(REG).fontSize(12).fillColor('#999').text('Image not available', IMG_X, IMG_Y + IMG_H / 2 - 6, { width: IMG_W, align: 'center' });
+  }
+} else {
+  // Aucun cover défini → placeholder gris
   doc.save().roundedRect(IMG_X, IMG_Y, IMG_W, IMG_H, 4).fill('#e5e5e5').restore();
   doc.font(REG).fontSize(12).fillColor('#999').text('Image', IMG_X, IMG_Y + IMG_H / 2 - 6, { width: IMG_W, align: 'center' });
+}
 
   // Footer page 1
   drawFooter(doc);
