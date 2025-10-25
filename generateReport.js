@@ -39,18 +39,25 @@ async function generateReport(data) {
   // ✅ On crée toujours un nouveau document PDF pour chaque rapport
   const doc = new PDFDocument({ size: "A4", margin: 40 });
 
+  // Dimensions dynamiques de la page PDF
+  const PAGE_W = doc.page.width;
+  const PAGE_H = doc.page.height;
+
+  // 🎨 Couleurs globales
   const BLUE = "#144176";
   const ORANGE = "#f97415";
   const GRAY = "#f5f5f5";
   const PANEL = "#fcfcfc";
 
+  // 📐 Marges et positions
   const LEFT = 40;
-  const PAGE_W = 595 - 80;
   const RIGHT_COL_X = LEFT + 320;
   const RIGHT_COL_W = 202;
 
+  // 🖋️ Polices
   const REG = "Helvetica";
   const BOLD = "Helvetica-Bold";
+
 
   // =====================
   // PAGE 1 : COUVERTURE
