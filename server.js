@@ -110,18 +110,23 @@ app.post("/api/pdfkit", async (req, res) => {
     const data = req.body;
     console.log("📥 Données reçues pour le PDF:", Object.keys(data));
 
+    // ✅ Génération du document PDF
     const doc = await generateReport(data);
 
+    // ✅ Définition des headers
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", "attachment; filename=rapport.pdf");
 
+    // ✅ On envoie le flux, sans refaire .end()
     doc.pipe(res);
-    doc.end();
+
+    // ❌ SUPPRIMER doc.end(); (le fichier l'appelle déjà à la fin)
   } catch (err) {
     console.error("❌ Erreur PDF:", err);
     res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
+
 
 // ==========================
 // 🚀 Lancement du serveur
