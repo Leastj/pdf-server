@@ -640,6 +640,128 @@ try {
 
   drawFooter(doc);
 
+// ==========================================
+// 🧰 SECTION 8 — Prestations de maintenance
+// ==========================================
+if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
+  const TITLE_COLOR = '#1E3A8A';
+  const ORANGE = '#F97316';
+  const GRAY_BG = '#F9FAFB';
+  const MARGIN_X = 60;
+  const BOX_PADDING = 12;
+  const PAGE_MARGIN_TOP = 60;
+  const PAGE_MARGIN_BOTTOM = 80;
+  const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
+  let y = doc.y + 40;
+
+  // 🟦 Titre principal
+  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
+    .text(
+      '8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat',
+      MARGIN_X,
+      y,
+      { width: PAGE_W - MARGIN_X * 2 }
+    );
+  y = doc.y + 25;
+
+  // Fonction pour forcer un saut de page
+  const checkPageBreak = (estimatedHeight = 100) => {
+    if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
+      doc.addPage();
+      y = PAGE_MARGIN_TOP;
+    }
+  };
+
+  for (const task of data.maintenance_tasks) {
+    // 🔸 Localisation
+    checkPageBreak(40);
+    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+      .text(`Localisation : ${task.location || '-'}`, MARGIN_X, y);
+    y = doc.y + 10;
+
+    if (task.elements && task.elements.length > 0) {
+      for (const el of task.elements) {
+        // 🔧 Élément
+        checkPageBreak(30);
+        doc.font(BOLD).fontSize(13).fillColor(TITLE_COLOR)
+          .text(`Élément : ${el.element || '-'}`, MARGIN_X + 15, y);
+        y = doc.y + 10;
+
+        if (el.defects && el.defects.length > 0) {
+          for (const def of el.defects) {
+            const BOX_X = MARGIN_X + 30;
+            const BOX_W = PAGE_W - MARGIN_X * 2 - 30;
+
+            // Données textes
+            const defectText = def.defect || '-';
+            const commentText = def.comment || '-';
+            const dueText = def.max_due_date || '-';
+            const doneText = def.completion_date || '-';
+
+            // Calcul de la hauteur estimée du bloc
+            const leftH =
+              doc.heightOfString(`${defectText}\n${commentText}`, { width: BOX_W / 2 - 30 }) + 50;
+            const rightH =
+              doc.heightOfString(`${dueText}\n${doneText}`, { width: BOX_W / 2 - 30 }) + 50;
+            const BOX_H = Math.max(leftH, rightH, 90);
+
+            // 🧩 Vérifier que le bloc entier tient sur la page
+            checkPageBreak(BOX_H + 10);
+
+            // 🩶 Bloc gris clair
+            doc.save()
+              .roundedRect(BOX_X, y, BOX_W, BOX_H, 8)
+              .fill(GRAY_BG)
+              .restore();
+
+            const textX = BOX_X + BOX_PADDING;
+            const LEFT_W = BOX_W / 2 - 20;
+            let textY = y + BOX_PADDING;
+
+            // 🔹 Colonne gauche
+            doc.font(BOLD).fontSize(11).fillColor(TITLE_COLOR)
+              .text('Défaut', textX, textY);
+            doc.font(REG).fillColor('black')
+              .text(defectText, textX, doc.y + 2, { width: LEFT_W });
+
+            doc.font(BOLD).fillColor(TITLE_COLOR)
+              .text('Commentaire', textX, doc.y + 8);
+            doc.font(REG).fillColor('black')
+              .text(commentText, textX, doc.y + 2, { width: LEFT_W });
+
+            // 🔹 Colonne droite
+            const rightX = BOX_X + BOX_W / 2 + 10;
+            const RIGHT_W = BOX_W / 2 - 20;
+            textY = y + BOX_PADDING;
+
+            doc.font(BOLD).fillColor(TITLE_COLOR)
+              .text('Délai souhaité', rightX, textY);
+            doc.font(REG).fillColor('black')
+              .text(dueText, rightX, doc.y + 2, { width: RIGHT_W });
+
+            doc.font(BOLD).fillColor(TITLE_COLOR)
+              .text('Date de réalisation', rightX, doc.y + 8);
+            doc.font(REG).fillColor('black')
+              .text(doneText, rightX, doc.y + 2, { width: RIGHT_W });
+
+            y += BOX_H + 12;
+          }
+        }
+
+        y += 8;
+      }
+    }
+
+    y += 20;
+
+    // 🧾 Saut de page entre localisations
+    checkPageBreak(60);
+  }
+}
+
+
+
+
   // ======================
   // FIN DU DOCUMENT
   // ======================
