@@ -12,26 +12,32 @@ const generateReport = require("./generateReport");
 const app = express();
 
 // ==========================
-// ⚙️ Configuration CORS
+// ⚙️ FIX Render + CORS + Figma
 // ==========================
 const allowedOrigins = [
-  "https://lint-shop-36442167.figma.site", // ton app figma
-  "http://localhost:5173",                 // dev local
+  "https://lint-shop-36442167.figma.site", // ton front Figma
+  "http://localhost:5173",                 // local
   "https://pdf-server-qimr.onrender.com"   // ton backend Render
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn("❌ CORS refusé pour:", origin);
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type"],
-}));
+// Middleware personnalisé pour CORS (plus fiable que cors())
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  // Réponse rapide pour les prévols (OPTIONS)
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
+
 
 // ==========================
 // 📄 Middleware global
