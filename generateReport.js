@@ -691,16 +691,16 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   const PAGE_MARGIN_BOTTOM = 80;
   const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 
-  // zone d'écriture courante
-  let y = doc.y + 35;
-
+ 
   // --- Saut de page (une seule déclaration)
-  const checkPageBreak = (estimatedHeight = 100) => {
-    if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
-      doc.addPage();
-      y = PAGE_MARGIN_TOP;
-    }
-  };
+let y = doc.y + 35; // ou la valeur que tu veux initialiser
+
+const checkPageBreak = (estimatedHeight = 100) => {
+  if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
+    doc.addPage();
+    y = PAGE_MARGIN_TOP;
+  }
+};
 
   // --- Titre principal
   const titleText =
@@ -807,6 +807,13 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   }
 }
 
+// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 9)
+if (y > PAGE_H - 250) {   // Si la fin de la page est trop proche
+  doc.addPage();
+  y = 60; // remet la marge top standard
+} else {
+  y += 40; // sinon, petit padding visuel
+}
 
 
 // ==========================================
@@ -922,6 +929,13 @@ if (data.owner_tasks && data.owner_tasks.length > 0) {
   }
 }
 
+// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 10)
+if (y > PAGE_H - 250) {
+  doc.addPage();
+  y = 60;
+} else {
+  y += 40;
+}
 
 // ==========================================
 // 🔟 SECTION 10 — Préconisation de modernisation et de sécurité datés à charge du propriétaire
@@ -1025,16 +1039,24 @@ if (data.modernization_tasks && data.modernization_tasks.length > 0) {
   }
 }
 
-
+// 🧾 --- Vérifie s’il reste assez de place pour la clôture
+if (y > PAGE_H - 200) {
+  doc.addPage();
+  y = 60;
+} else {
+  y += 40;
+}
 
 // ==========================================
 // 🔚 SECTION 11 — Clôture du rapport
 // ==========================================
-const TITLE_COLOR = '#1E3A8A';
-const MARGIN_X = 50;
+{
+  const TITLE_COLOR = '#1E3A8A';
+  const MARGIN_X = 50;
+  let y = doc.y + 60;
 
-// ✅ Position de départ
-let y = doc.y + 60;
+  doc.font(BOLD).fontSize(13).fillColor(ORANGE).text('CLÔTURE', MARGIN_X, y);
+  y += 25;
 
 // 🟧 Titre de la section
 doc
@@ -1083,10 +1105,12 @@ doc
   .fillColor(TITLE_COLOR)
   .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
 
+}
+
 // ======================
 // FIN DU DOCUMENT
 // ======================
-addPageNumbersAndFooters(doc);
+addPageNumbers(doc);
 doc.end();
 return doc;
 }
