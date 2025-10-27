@@ -1053,6 +1053,9 @@ if (y > PAGE_H - 200) {
 const TITLE_COLOR = '#1E3A8A';
 const MARGIN_X = 50;
 
+// ✅ on démarre avec une position verticale de base
+let y = doc.y + 60;
+
 // 🟧 Titre de la section
 doc
   .font(BOLD)
