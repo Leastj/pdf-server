@@ -1110,6 +1110,7 @@ if (y > PAGE_H - 200) {
 // ======================
 // FIN DU DOCUMENT
 // ======================
+drawFooter(doc);
 addPageNumbers(doc);
 doc.end();
 return doc;
