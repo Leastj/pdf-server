@@ -32,12 +32,43 @@ Toute reproduction et/ou diffusion même partielle sans accord préalable d’E 
   });
 }
 
+function addPageNumbers(doc) {
+  const TITLE_COLOR = '#1E3A8A';
+  const FONT_SIZE = 9;
+  const pageTotal = doc.bufferedPageRange().count;
+
+  for (let i = 0; i < pageTotal; i++) {
+    doc.switchToPage(i);
+    const pageNum = `Page ${i + 1} / ${pageTotal}`;
+    const textWidth = doc.widthOfString(pageNum, { size: FONT_SIZE });
+    const x = (doc.page.width - textWidth) / 2;
+    const y = doc.page.height - 40;
+
+    doc
+      .font('Helvetica')
+      .fontSize(FONT_SIZE)
+      .fillColor(TITLE_COLOR)
+      .text(pageNum, x, y);
+  }
+}
+
+
 // ============================
 // Génération du PDF
 // ============================
 async function generateReport(data) {
   // ✅ On crée toujours un nouveau document PDF pour chaque rapport
   const doc = new PDFDocument({ size: "A4", margin: 40 });
+
+  // ============================
+// Pagination setup
+// ============================
+let pageCount = 1;
+
+// Incrémente le nombre total de pages à chaque ajout
+doc.on('pageAdded', () => {
+  pageCount++;
+});
 
   // Dimensions dynamiques de la page PDF
   const PAGE_W = doc.page.width;
@@ -654,24 +685,16 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   const TITLE_COLOR = '#1E3A8A';
   const ORANGE = '#F97316';
   const GRAY_BG = '#F9FAFB';
-  const MARGIN_X = 60;
-  const BOX_PADDING = 12;
+
+  const MARGIN_X = 50;                 // marge latérale
   const PAGE_MARGIN_TOP = 60;
   const PAGE_MARGIN_BOTTOM = 80;
   const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
-  let y = doc.y + 40;
 
-  // 🟦 Titre principal
-  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
-    .text(
-      '8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat',
-      MARGIN_X,
-      y,
-      { width: PAGE_W - MARGIN_X * 2 }
-    );
-  y = doc.y + 25;
+  // zone d'écriture courante
+  let y = doc.y + 35;
 
-  // Fonction pour forcer un saut de page
+  // --- Saut de page (une seule déclaration)
   const checkPageBreak = (estimatedHeight = 100) => {
     if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
       doc.addPage();
@@ -679,99 +702,410 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
     }
   };
 
+  // --- Titre principal
+  const titleText =
+    '8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat';
+
+  // on mesure le titre avec la bonne taille de police
+  doc.font(BOLD).fontSize(14);
+  const titleHeight = doc.heightOfString(titleText, { width: PAGE_W - 2 * MARGIN_X });
+
+  // vérifier AVANT d'écrire le titre, pour que le tableau suive sur la même page
+  checkPageBreak(titleHeight + 24);
+
+  doc
+    .fillColor(ORANGE)
+    .text(titleText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+
+  y += titleHeight + 12; // petit padding sous le titre
+
+  // --- Largeur utile du tableau et colonnes (100% de la largeur utile)
+  const tableW = PAGE_W - 2 * MARGIN_X;
+  // proportions : défaut 28% / commentaire 36% / délai 18% / date 18%
+  const colW = [
+    Math.floor(tableW * 0.28),
+    Math.floor(tableW * 0.36),
+    Math.floor(tableW * 0.18),
+    tableW - Math.floor(tableW * 0.28) - Math.floor(tableW * 0.36) - Math.floor(tableW * 0.18),
+  ];
+  const colX = [
+    MARGIN_X,
+    MARGIN_X + colW[0],
+    MARGIN_X + colW[0] + colW[1],
+    MARGIN_X + colW[0] + colW[1] + colW[2],
+  ];
+
   for (const task of data.maintenance_tasks) {
     // 🔸 Localisation
-    checkPageBreak(40);
-    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
-      .text(`Localisation : ${task.location || '-'}`, MARGIN_X, y);
-    y = doc.y + 10;
+    checkPageBreak(30);
+    doc.font(BOLD).fontSize(13).fillColor(ORANGE).text(task.location || '-', MARGIN_X, y);
+    y = doc.y + 8;
 
-    if (task.elements && task.elements.length > 0) {
+    if (Array.isArray(task.elements) && task.elements.length > 0) {
       for (const el of task.elements) {
         // 🔧 Élément
-        checkPageBreak(30);
-        doc.font(BOLD).fontSize(13).fillColor(TITLE_COLOR)
-          .text(`Élément : ${el.element || '-'}`, MARGIN_X + 15, y);
-        y = doc.y + 10;
+        checkPageBreak(32);
+        doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
+          .text(`Élément : ${el.element || '-'}`, MARGIN_X, y);
+        y = doc.y + 8;
 
-        if (el.defects && el.defects.length > 0) {
-          for (const def of el.defects) {
-            const BOX_X = MARGIN_X + 30;
-            const BOX_W = PAGE_W - MARGIN_X * 2 - 30;
+        // 🟦 Entêtes
+        const headerH = 32;
+        checkPageBreak(headerH);
 
-            // Données textes
-            const defectText = def.defect || '-';
-            const commentText = def.comment || '-';
-            const dueText = def.max_due_date || '-';
-            const doneText = def.completion_date || '-';
+        doc.save()
+          .fillColor(TITLE_COLOR)
+          .rect(MARGIN_X, y, tableW, headerH)
+          .fill()
+          .restore();
 
-            // Calcul de la hauteur estimée du bloc
-            const leftH =
-              doc.heightOfString(`${defectText}\n${commentText}`, { width: BOX_W / 2 - 30 }) + 50;
-            const rightH =
-              doc.heightOfString(`${dueText}\n${doneText}`, { width: BOX_W / 2 - 30 }) + 50;
-            const BOX_H = Math.max(leftH, rightH, 90);
+        doc.font(BOLD).fontSize(9.5).fillColor('white');
+        const headers = [
+          'Défaut',
+          'Commentaire',
+          'Délai souhaité de réalisation',
+          'Date effective de réalisation',
+        ];
+        headers.forEach((h, i) => {
+          doc.text(h, colX[i] + 6, y + 7, { width: colW[i] - 12, lineGap: 0.5 });
+        });
 
-            // 🧩 Vérifier que le bloc entier tient sur la page
-            checkPageBreak(BOX_H + 10);
+        y += headerH;
 
-            // 🩶 Bloc gris clair
-            doc.save()
-              .roundedRect(BOX_X, y, BOX_W, BOX_H, 8)
-              .fill(GRAY_BG)
-              .restore();
+        // 🧩 Lignes
+        let rowIndex = 0;
+        const defects = Array.isArray(el.defects) ? el.defects : [];
+        for (const def of defects) {
+          const rowH = 32;
+          checkPageBreak(rowH);
 
-            const textX = BOX_X + BOX_PADDING;
-            const LEFT_W = BOX_W / 2 - 20;
-            let textY = y + BOX_PADDING;
+          // alternance de fond
+          const rowColor = rowIndex % 2 === 0 ? GRAY_BG : 'white';
+          doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, rowH).fill().restore();
 
-            // 🔹 Colonne gauche
-            doc.font(BOLD).fontSize(11).fillColor(TITLE_COLOR)
-              .text('Défaut', textX, textY);
-            doc.font(REG).fillColor('black')
-              .text(defectText, textX, doc.y + 2, { width: LEFT_W });
+          // valeurs
+          doc.font(REG).fontSize(10).fillColor('#111827'); // gris très foncé
+          const values = [
+            def.defect || '',
+            def.comment || '',
+            def.max_due_date || '—',
+            def.completion_date || '—',
+          ];
+          values.forEach((v, i) => {
+            doc.text(v, colX[i] + 6, y + 9, { width: colW[i] - 12 });
+          });
 
-            doc.font(BOLD).fillColor(TITLE_COLOR)
-              .text('Commentaire', textX, doc.y + 8);
-            doc.font(REG).fillColor('black')
-              .text(commentText, textX, doc.y + 2, { width: LEFT_W });
-
-            // 🔹 Colonne droite
-            const rightX = BOX_X + BOX_W / 2 + 10;
-            const RIGHT_W = BOX_W / 2 - 20;
-            textY = y + BOX_PADDING;
-
-            doc.font(BOLD).fillColor(TITLE_COLOR)
-              .text('Délai souhaité', rightX, textY);
-            doc.font(REG).fillColor('black')
-              .text(dueText, rightX, doc.y + 2, { width: RIGHT_W });
-
-            doc.font(BOLD).fillColor(TITLE_COLOR)
-              .text('Date de réalisation', rightX, doc.y + 8);
-            doc.font(REG).fillColor('black')
-              .text(doneText, rightX, doc.y + 2, { width: RIGHT_W });
-
-            y += BOX_H + 12;
-          }
+          y += rowH;
+          rowIndex++;
         }
 
-        y += 8;
+        y += 14; // spacing entre éléments
       }
     }
 
-    y += 20;
-
-    // 🧾 Saut de page entre localisations
-    checkPageBreak(60);
+    y += 18; // spacing entre localisations
   }
 }
 
+// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 9)
+if (y > PAGE_H - 250) {   // Si la fin de la page est trop proche
+  doc.addPage();
+  y = 60; // remet la marge top standard
+} else {
+  y += 40; // sinon, petit padding visuel
+}
 
 
+// ==========================================
+// 🧾 SECTION 9 — Prestations à charge du propriétaire
+// ==========================================
 
+
+if (data.owner_tasks && data.owner_tasks.length > 0) {
+  // 🔹 Garder les mêmes constantes
+  const TITLE_COLOR = '#1E3A8A';
+  const ORANGE = '#F97316';
+  const GRAY_BG = '#F9FAFB';
+  const MARGIN_X = 50;
+  const PAGE_MARGIN_TOP = 60;
+  const PAGE_MARGIN_BOTTOM = 80;
+  const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
+
+  // ✅ NE PAS réinitialiser `y` ni redéclarer checkPageBreak()
+  // On continue à la suite de la section précédente
+  y += 40; // petit padding entre section 8 et 9
+
+  // 🔸 Titre principal
+  const titleText = "9 – Liste des prestations à charge du propriétaire";
+  doc.font(BOLD).fontSize(14);
+  const titleHeight = doc.heightOfString(titleText, { width: PAGE_W - 2 * MARGIN_X });
+  checkPageBreak(titleHeight + 24);
+
+  doc
+    .fillColor(ORANGE)
+    .text(titleText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+  y += titleHeight + 12;
+
+  // --- Largeur utile du tableau
+  const tableW = PAGE_W - 2 * MARGIN_X;
+  const colW = [
+    Math.floor(tableW * 0.25),
+    Math.floor(tableW * 0.30),
+    Math.floor(tableW * 0.20),
+    tableW - Math.floor(tableW * 0.25) - Math.floor(tableW * 0.30) - Math.floor(tableW * 0.20),
+  ];
+  const colX = [
+    MARGIN_X,
+    MARGIN_X + colW[0],
+    MARGIN_X + colW[0] + colW[1],
+    MARGIN_X + colW[0] + colW[1] + colW[2],
+  ];
+
+  for (const task of data.owner_tasks) {
+    // 🟧 Localisation
+    checkPageBreak(30);
+    doc.font(BOLD).fontSize(13).fillColor(ORANGE).text(task.location || '-', MARGIN_X, y);
+    y = doc.y + 8;
+
+    if (Array.isArray(task.elements) && task.elements.length > 0) {
+      for (const el of task.elements) {
+        // 🔩 Élément
+        checkPageBreak(32);
+        doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
+          .text(`Élément : ${el.name || '-'}`, MARGIN_X, y);
+        y = doc.y + 8;
+
+        // --- En-têtes
+        const headerH = 32;
+        checkPageBreak(headerH);
+        doc.save()
+          .fillColor(TITLE_COLOR)
+          .rect(MARGIN_X, y, tableW, headerH)
+          .fill()
+          .restore();
+
+        doc.font(BOLD).fontSize(9.5).fillColor('white');
+        const headers = [
+          'Défaut',
+          'Commentaire',
+          'Montant HT (€)',
+          'Montant TTC (€)',
+        ];
+        headers.forEach((h, i) => {
+          doc.text(h, colX[i] + 6, y + 7, { width: colW[i] - 12, lineGap: 0.5 });
+        });
+        y += headerH;
+
+        // --- Lignes
+        let rowIndex = 0;
+        const defects = Array.isArray(el.defects) ? el.defects : [];
+        for (const def of defects) {
+          const rowH = 32;
+          checkPageBreak(rowH);
+
+          const rowColor = rowIndex % 2 === 0 ? GRAY_BG : 'white';
+          doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, rowH).fill().restore();
+
+          doc.font(REG).fontSize(10).fillColor('#111827');
+          const values = [
+            def.name || '',
+            def.comment || '',
+            def.cost_ht ? `${def.cost_ht} €` : '—',
+            def.cost_ttc ? `${def.cost_ttc} €` : '—',
+          ];
+          values.forEach((v, i) => {
+            doc.text(v, colX[i] + 6, y + 9, { width: colW[i] - 12 });
+          });
+
+          y += rowH;
+          rowIndex++;
+        }
+
+        y += 14;
+      }
+    }
+
+    y += 18;
+  }
+}
+
+// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 10)
+if (y > PAGE_H - 250) {
+  doc.addPage();
+  y = 60;
+} else {
+  y += 40;
+}
+
+// ==========================================
+// 🔟 SECTION 10 — Préconisation de modernisation et de sécurité datés à charge du propriétaire
+// ==========================================
+if (data.modernization_tasks && data.modernization_tasks.length > 0) {
+  const TITLE_COLOR = '#1E3A8A';
+  const ORANGE = '#F97316';
+  const GRAY_BG = '#F9FAFB';
+  const MARGIN_X = 50;
+  const PAGE_MARGIN_TOP = 60;
+  const PAGE_MARGIN_BOTTOM = 80;
+  const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
+
+  // 🔸 Titre principal
+  const titleText = "10 – Préconisation de modernisation et de sécurité datés à charge du propriétaire";
+  doc.font(BOLD).fontSize(14);
+  const titleHeight = doc.heightOfString(titleText, { width: PAGE_W - 2 * MARGIN_X });
+  checkPageBreak(titleHeight + 24);
+
+  doc
+    .fillColor(ORANGE)
+    .text(titleText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+  y += titleHeight + 12;
+
+  // --- Largeur utile du tableau
+  const tableW = PAGE_W - 2 * MARGIN_X;
+  // Répartition équilibrée : défaut 25%, commentaire 30%, HT 20%, TTC 20%
+  const colW = [
+    Math.floor(tableW * 0.25),
+    Math.floor(tableW * 0.30),
+    Math.floor(tableW * 0.20),
+    tableW - Math.floor(tableW * 0.25) - Math.floor(tableW * 0.30) - Math.floor(tableW * 0.20),
+  ];
+  const colX = [
+    MARGIN_X,
+    MARGIN_X + colW[0],
+    MARGIN_X + colW[0] + colW[1],
+    MARGIN_X + colW[0] + colW[1] + colW[2],
+  ];
+
+  for (const task of data.modernization_tasks) {
+    // 🟧 Localisation
+    checkPageBreak(30);
+    doc.font(BOLD).fontSize(13).fillColor(ORANGE).text(task.location || '-', MARGIN_X, y);
+    y = doc.y + 8;
+
+    // 🔧 Élément
+    checkPageBreak(32);
+    doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
+      .text(`Élément : ${task.element || '-'}`, MARGIN_X, y);
+    y = doc.y + 8;
+
+    // --- En-têtes
+    const headerH = 32;
+    checkPageBreak(headerH);
+    doc.save()
+      .fillColor(TITLE_COLOR)
+      .rect(MARGIN_X, y, tableW, headerH)
+      .fill()
+      .restore();
+
+    doc.font(BOLD).fontSize(9.5).fillColor('white');
+    const headers = [
+      'Défaut',
+      'Commentaire',
+      'Montant estimé HT (€)',
+      'Montant estimé TTC (€)',
+    ];
+    headers.forEach((h, i) => {
+      doc.text(h, colX[i] + 6, y + 7, { width: colW[i] - 12, lineGap: 0.5 });
+    });
+
+    y += headerH;
+
+    // --- Lignes
+    let rowIndex = 0;
+    const defects = Array.isArray(task.defects) ? task.defects : [];
+    for (const def of defects) {
+      const rowH = 32;
+      checkPageBreak(rowH);
+
+      const rowColor = rowIndex % 2 === 0 ? GRAY_BG : 'white';
+      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, rowH).fill().restore();
+
+      doc.font(REG).fontSize(10).fillColor('#111827');
+      const values = [
+        def.defect || '',
+        def.comment || '',
+        def.cost_ht ? `${def.cost_ht} €` : '—',
+        def.cost_ttc ? `${def.cost_ttc} €` : '—',
+      ];
+      values.forEach((v, i) => {
+        doc.text(v, colX[i] + 6, y + 9, { width: colW[i] - 12 });
+      });
+
+      y += rowH;
+      rowIndex++;
+    }
+
+    y += 14; // padding entre localisations
+  }
+}
+
+// 🧾 --- Vérifie s’il reste assez de place pour la clôture
+if (y > PAGE_H - 200) {
+  doc.addPage();
+  y = 60;
+} else {
+  y += 40;
+}
+
+// ==========================================
+// 🔚 SECTION 11 — Clôture du rapport
+// ==========================================
+const TITLE_COLOR = '#1E3A8A';
+const MARGIN_X = 50;
+
+// 🟧 Titre de la section
+doc
+  .font(BOLD)
+  .fontSize(13)
+  .fillColor(ORANGE)
+  .text('CLÔTURE', MARGIN_X, y);
+y += 25;
+
+// 💬 Texte de conclusion
+const closureText = `Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,`;
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text(closureText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+y += 40;
+
+// Formule de politesse
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Cordialement,', MARGIN_X, y);
+y += 35;
+
+// Signature
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Fait à [Ville], le [Date]', MARGIN_X, y);
+y += 35;
+
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Pour E C I', MARGIN_X, y);
+y += 25;
+
+// Nom du signataire
+doc
+  .font(BOLD)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
+
+
+  
   // ======================
   // FIN DU DOCUMENT
   // ======================
+  addPageNumbers(doc);
   doc.end();
   return doc;
 }
