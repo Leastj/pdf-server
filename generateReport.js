@@ -1053,7 +1053,7 @@ if (y > PAGE_H - 200) {
 const TITLE_COLOR = '#1E3A8A';
 const MARGIN_X = 50;
 
-// ✅ on démarre avec une position verticale de base
+// ✅ Position de départ
 let y = doc.y + 60;
 
 // 🟧 Titre de la section
@@ -1103,17 +1103,16 @@ doc
   .fillColor(TITLE_COLOR)
   .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
 
-
-  
-  // ======================
-  // FIN DU DOCUMENT
-  // ======================
-  addPageNumbers(doc);
-  doc.end();
-  return doc;
+// ======================
+// FIN DU DOCUMENT
+// ======================
+addPageNumbersAndFooters(doc);
+doc.end();
+return doc;
 }
 
 module.exports = generateReport;
+
 
 
 
