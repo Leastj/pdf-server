@@ -807,13 +807,6 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   }
 }
 
-// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 9)
-if (y > PAGE_H - 250) {   // Si la fin de la page est trop proche
-  doc.addPage();
-  y = 60; // remet la marge top standard
-} else {
-  y += 40; // sinon, petit padding visuel
-}
 
 
 // ==========================================
@@ -929,13 +922,6 @@ if (data.owner_tasks && data.owner_tasks.length > 0) {
   }
 }
 
-// 🧾 --- Vérifie s’il reste assez de place pour la section suivante (section 10)
-if (y > PAGE_H - 250) {
-  doc.addPage();
-  y = 60;
-} else {
-  y += 40;
-}
 
 // ==========================================
 // 🔟 SECTION 10 — Préconisation de modernisation et de sécurité datés à charge du propriétaire
@@ -1039,13 +1025,7 @@ if (data.modernization_tasks && data.modernization_tasks.length > 0) {
   }
 }
 
-// 🧾 --- Vérifie s’il reste assez de place pour la clôture
-if (y > PAGE_H - 200) {
-  doc.addPage();
-  y = 60;
-} else {
-  y += 40;
-}
+
 
 // ==========================================
 // 🔚 SECTION 11 — Clôture du rapport
