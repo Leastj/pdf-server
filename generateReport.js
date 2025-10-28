@@ -713,7 +713,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
       // 🔹 Élément
       checkPageBreak(30);
-      doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
+      doc.font(REG).fontSize(10).fillColor(TITLE_COLOR)
         .text(el.element || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
@@ -792,8 +792,6 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   const CELL_PADDING = 6;
   let y = doc.y + 45;
 
-  
-
   // 🔹 Titre principal
   doc.font(BOLD).fontSize(12).fillColor(BLUE)
     .text(
@@ -812,13 +810,13 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
     }
   };
 
-  // ✅ Table structure
+  // ✅ Structure du tableau
   const tableW = PAGE_W - 2 * MARGIN_X;
   const colW = [
-    Math.floor(tableW * 0.22),
-    Math.floor(tableW * 0.22),
-    Math.floor(tableW * 0.24),
-    Math.floor(tableW * 0.16),
+    Math.floor(tableW * 0.22), // Élément
+    Math.floor(tableW * 0.22), // Défaut
+    Math.floor(tableW * 0.24), // Commentaire
+    Math.floor(tableW * 0.16), // HT
     tableW - Math.floor(tableW * 0.22) * 2 - Math.floor(tableW * 0.24) - Math.floor(tableW * 0.16)
   ];
 
@@ -834,51 +832,53 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     // 🟧 Localisation affichée avant chaque groupe
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(10).fillColor(BLUE)
+    doc.font(REG).fontSize(10).fillColor(BLUE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 10;
 
-    if (!task.elements || task.elements.length === 0) continue;
+    if (!Array.isArray(task.elements) || task.elements.length === 0) continue;
 
-    // 🟦 Header du tableau
+    // 🟦 En-têtes du tableau
     checkPageBreak(HEADER_H);
     doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
     doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
 
-    ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"]
-      .forEach((h, i) => {
-        doc.text(h, colX[i] + CELL_PADDING, y + 8, {
-          width: colW[i] - 2 * CELL_PADDING
-        });
+    const headers = ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"];
+    headers.forEach((h, i) => {
+      doc.text(h, colX[i] + CELL_PADDING, y + 8, {
+        width: colW[i] - 2 * CELL_PADDING
       });
-
+    });
     y += HEADER_H;
 
-    // 🧩 Rows
-    let index = 0;
+    // 🧩 Boucle sur chaque élément puis sur ses défauts
+    let rowIndex = 0;
     for (const el of task.elements) {
-      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-      checkPageBreak(ROW_H);
+      const defects = Array.isArray(el.defects) ? el.defects : [];
+      for (const def of defects) {
+        const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
+        checkPageBreak(ROW_H);
 
-      const values = [
-        el.element || "—",
-        el.defect || "—",
-        el.comment || "—",
-        el.price_ht ? `${el.price_ht}€` : "—",
-        el.price_ttc ? `${el.price_ttc}€` : "—"
-      ];
+        doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+        doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
-      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+        const values = [
+          el.name || "—",
+          def.name || "—",
+          def.comment || "—",
+          def.cost_ht ? `${def.cost_ht}€` : "—",
+          def.cost_ttc ? `${def.cost_ttc}€` : "—"
+        ];
 
-      values.forEach((v, i) => {
-        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-          width: colW[i] - 2 * CELL_PADDING
+        values.forEach((v, i) => {
+          doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+            width: colW[i] - 2 * CELL_PADDING
+          });
         });
-      });
 
-      y += ROW_H;
-      index++;
+        y += ROW_H;
+        rowIndex++;
+      }
     }
 
     y += 18;
