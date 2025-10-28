@@ -48,7 +48,6 @@ const PAGE_H = doc.page.height;
 // Couleurs globales
 const BLUE = "#144176";
 const TITLE_COLOR = "#1E3A8A";
-const ORANGE = "#F97316";
 const GRAY = "#F5F5F5";
 const GRAY_BG = "#F9FAFB";
 const PANEL = "#FCFCFC";
@@ -158,7 +157,7 @@ doc.font(REG).fontSize(8).fillColor(BLUE)
 
 // Titres de service
 const titlesY = offsetY + addrH + 12;
-doc.font(BOLD).fillColor(ORANGE)
+doc.font(BOLD).fillColor(BLUE)
    .text(serviceTitles, LEFT + 10, titlesY, {
      width: addrWidth,
      align: 'center'
@@ -231,7 +230,7 @@ if (coverPhotoUrl) {
   doc.addPage();
 
   // 1 - Préambule
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE).text('1 - Préambule', LEFT, 60);
+  doc.font(BOLD).fontSize(12).fillColor(BLUE).text('1 - Préambule', LEFT, 60);
 
   const ROW_Y = 100;
   doc.font(BOLD).fontSize(8).fillColor(BLUE).text("Date de l'audit", LEFT, ROW_Y);
@@ -258,7 +257,7 @@ if (coverPhotoUrl) {
   // 2 - Prestataire
   // =====================
   const PRESTA_Y = OBJ_Y + 100;
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
      .text("2 - Prestataire de maintenance & identification de l'installation", LEFT, PRESTA_Y);
 
   const colW = (PAGE_W - 40) / 2;
@@ -283,11 +282,11 @@ if (coverPhotoUrl) {
   // 3 - Caractéristiques techniques
   // =====================
   const CARAC_Y = PRESTA_Y + 120;
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
      .text("3 - Caractéristiques techniques", LEFT, CARAC_Y);
 
   // 3.1 - Informations générales
-  doc.font(REG).fontSize(12).fillColor(ORANGE)
+  doc.font(REG).fontSize(12).fillColor(BLUE)
      .text("3.1 - Informations générales", LEFT, CARAC_Y + 30);
 
   // =====================
@@ -355,7 +354,7 @@ function ensureSpace(y, h = ROW_H) {
 // 3.2 - Caractéristiques principales
 // =====================
 let sec32TitleY = ensureSpace(currentY + 40, 20);
-doc.font(REG).fontSize(12).fillColor(ORANGE)
+doc.font(REG).fontSize(12).fillColor(BLUE)
    .text("3.2 - Caractéristiques principales", LEFT, sec32TitleY);
 
 let sec32Y = sec32TitleY + 30;
@@ -391,7 +390,7 @@ rows32.forEach((row, i) => {
 // 3.3 - Machinerie – Caractéristiques principales
 // =====================
 let sec33TitleY = ensureSpace(sec32Y + 40, 20);
-doc.font(REG).fontSize(12).fillColor(ORANGE)
+doc.font(REG).fontSize(12).fillColor(BLUE)
    .text("3.3 - Machinerie – Caractéristiques principales", LEFT, sec33TitleY);
 
 let sec33Y = sec33TitleY + 30;
@@ -425,7 +424,7 @@ doc.addPage();       // nouvelle page = page 4
 // 3.4 - Gaine
 // =====================
 let sec34TitleY = NEWPAGE_TOP; // démarre en haut de la nouvelle page
-doc.font(REG).fontSize(12).fillColor(ORANGE)
+doc.font(REG).fontSize(12).fillColor(BLUE)
    .text("3.4 - Gaine", LEFT, sec34TitleY);
 
 let sec34Y = sec34TitleY + 30;
@@ -449,7 +448,7 @@ rows34.forEach((row, i) => {
 // 3.5 - Cabine – Caractéristiques principales
 // =====================
 let sec35TitleY = ensureSpace(sec34Y + 40, 20);
-doc.font(REG).fontSize(12).fillColor(ORANGE)
+doc.font(REG).fontSize(12).fillColor(BLUE)
    .text("3.5 - Cabine – Caractéristiques principales", LEFT, sec35TitleY);
 
 let sec35Y = sec35TitleY + 30;
@@ -478,7 +477,7 @@ drawFooter(doc);
 
 // Position juste après la section 3.5
 let sec4TitleY = ensureSpace(sec35Y + 40, 20);
-doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+doc.font(BOLD).fontSize(12).fillColor(BLUE)
    .text("4 - Évaluation de l’installation", LEFT, sec4TitleY);
 
 let sec4Y = sec4TitleY + 30;
@@ -505,7 +504,7 @@ drawFooter(doc);
 
 let sec5TitleY = ensureSpace(sec4Y + 80, 40);
 
-doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+doc.font(BOLD).fontSize(12).fillColor(BLUE)
    .text("5 - Évaluation de la qualité de maintenance", LEFT, sec5TitleY);
 
 let sec5Y = sec5TitleY + 30;
@@ -534,7 +533,7 @@ drawFooter(doc);
 doc.addPage();
 
 let sec6TitleY = 80;
-doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+doc.font(BOLD).fontSize(12).fillColor(BLUE)
    .text("6 - Constat", LEFT, sec6TitleY);
 
 let sec6Y = sec6TitleY + 30;
@@ -596,7 +595,7 @@ drawFooter(doc);
   // ======================
   doc.addPage();
   let sec7Y = 80;
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
     .text("7 - Photographies des installations", LEFT, sec7Y);
   sec7Y += 40;
 
@@ -669,7 +668,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
   let y = doc.y + 40;
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
     .text(
       "8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat",
       MARGIN_X,
@@ -706,7 +705,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
     // 🟧 Localisation
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(10).fillColor(ORANGE)
+    doc.font(BOLD).fontSize(10).fillColor(BLUE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 12;
 
@@ -796,7 +795,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
     .text(
       "9 – Liste des prestations à charge du propriétaire",
       MARGIN_X,
@@ -835,7 +834,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     // 🟧 Localisation affichée avant chaque groupe
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(10).fillColor(ORANGE)
+    doc.font(BOLD).fontSize(10).fillColor(BLUE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 10;
 
