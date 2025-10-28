@@ -727,16 +727,19 @@ checkPageBreak(HEADER_H);
 doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
 doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
 
-// libellés conformes à la spec
+// ✅ Libellés fixés + largeur conforme
 const headers = [
   "Défaut",
   "Commentaire",
-  "Délai souhaité de réalisation",   // ← corrigé
-  "Date effective de réalisation"    // ← corrigé
+  "Date limite prévue pour correction",
+  "Date réelle d’intervention"
 ];
 
 headers.forEach((h, i) => {
-  doc.text(h, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - 2 * CELL_PADDING });
+  doc.text(h, colX[i] + CELL_PADDING, y + 7, {
+    width: colW[i] - CELL_PADDING * 2,
+    align: "center"
+  });
 });
 
 y += HEADER_H;
@@ -750,28 +753,24 @@ for (const def of defects) {
   doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
   doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-  // helpers (optionnel) : formater la date si ISO
-  const fmt = v => {
-    if (!v) return "—";
-    // 2025-10-23 or 2025/10/23 → 23/10/2025
-    const m = String(v).match(/^(\d{4})[-/](\d{2})[-/](\d{2})/);
-    return m ? `${m[3]}/${m[2]}/${m[1]}` : String(v);
-  };
-
   const values = [
     def.defect || "—",
     def.comment || "—",
-    fmt(def.max_due_date),      // délai souhaité de réalisation
-    fmt(def.completion_date)    // date effective de réalisation
+    def.max_due_date || "—",
+    def.completion_date || "—"
   ];
 
   values.forEach((v, i) => {
-    doc.text(v, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - CELL_PADDING * 2 });
+    doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+      width: colW[i] - CELL_PADDING * 2,
+      align: "center"
+    });
   });
 
   y += ROW_H;
   rowIndex++;
 }
+
 
       y += 18; // espace avant élément suivant
     }
