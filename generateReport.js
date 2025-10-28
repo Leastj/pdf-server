@@ -718,7 +718,8 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
         .text(el.element || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
-      const defects = el.defects || [];
+      const defects = Array.isArray(el.defects) ? el.defects : [];
+
 
       if (!defects.length) continue;
 
@@ -792,6 +793,8 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   const CELL_PADDING = 6;
   let y = doc.y + 45;
 
+  
+
   // 🔹 Titre principal
   doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
     .text(
@@ -852,37 +855,32 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     y += HEADER_H;
 
-// 🧩 Lignes dynamiques
-let rowIndex = 0;
-for (const def of defects) {
-  const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
-  checkPageBreak(ROW_H);
+    // 🧩 Rows
+    let index = 0;
+    for (const el of task.elements) {
+      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
+      checkPageBreak(ROW_H);
 
-  doc.save()
-    .fillColor(rowColor)
-    .rect(MARGIN_X, y, tableW, ROW_H)
-    .fill()
-    .restore();
+      const values = [
+        el.element || "—",
+        el.defect || "—",
+        el.comment || "—",
+        el.price_ht ? `${el.price_ht}€` : "—",
+        el.price_ttc ? `${el.price_ttc}€` : "—"
+      ];
 
-  doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-  const values = [
-    def.defect || "—",
-    def.comment || "—",
-    def.max_due_date || "—",
-    def.completion_date || "—"
-  ];
+      values.forEach((v, i) => {
+        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+          width: colW[i] - 2 * CELL_PADDING
+        });
+      });
 
-  values.forEach((v, i) => {
-    doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-      width: colW[i] - CELL_PADDING * 2
-    });
-  });
-
-  y += ROW_H;
-  rowIndex++;
-}
-
+      y += ROW_H;
+      index++;
+    }
 
     y += 18;
   }
