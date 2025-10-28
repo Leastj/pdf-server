@@ -722,41 +722,56 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
       if (!defects.length) continue;
 
-      // 🟦 En-têtes tableau
-      checkPageBreak(HEADER_H);
-      doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
-      doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
+// 🟦 En-têtes tableau
+checkPageBreak(HEADER_H);
+doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
+doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
 
-      ["Défaut", "Commentaire", "Délai souhaité", "Date de réalisation"]
-        .forEach((h, i) => {
-          doc.text(h, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - 2 * CELL_PADDING });
-        });
+// libellés conformes à la spec
+const headers = [
+  "Défaut",
+  "Commentaire",
+  "Délai souhaité de réalisation",   // ← corrigé
+  "Date effective de réalisation"    // ← corrigé
+];
 
-      y += HEADER_H;
+headers.forEach((h, i) => {
+  doc.text(h, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - 2 * CELL_PADDING });
+});
 
-      // 🧩 Lignes dynamiques
-      let rowIndex = 0;
-      for (const def of defects) {
-        const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
-        checkPageBreak(ROW_H);
+y += HEADER_H;
 
-        doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
-        doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+// 🧩 Lignes dynamiques
+let rowIndex = 0;
+for (const def of defects) {
+  const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
+  checkPageBreak(ROW_H);
 
-        const values = [
-          def.defect || "—",
-          def.comment || "—",
-          def.max_due_date || "—",
-          def.completion_date || "—"
-        ];
+  doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+  doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-        values.forEach((v, i) => {
-          doc.text(v, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - CELL_PADDING * 2 });
-        });
+  // helpers (optionnel) : formater la date si ISO
+  const fmt = v => {
+    if (!v) return "—";
+    // 2025-10-23 or 2025/10/23 → 23/10/2025
+    const m = String(v).match(/^(\d{4})[-/](\d{2})[-/](\d{2})/);
+    return m ? `${m[3]}/${m[2]}/${m[1]}` : String(v);
+  };
 
-        y += ROW_H;
-        rowIndex++;
-      }
+  const values = [
+    def.defect || "—",
+    def.comment || "—",
+    fmt(def.max_due_date),      // délai souhaité de réalisation
+    fmt(def.completion_date)    // date effective de réalisation
+  ];
+
+  values.forEach((v, i) => {
+    doc.text(v, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - CELL_PADDING * 2 });
+  });
+
+  y += ROW_H;
+  rowIndex++;
+}
 
       y += 18; // espace avant élément suivant
     }
