@@ -781,6 +781,110 @@ for (const def of defects) {
   drawFooter(doc); // fin de section
 }
 
+// ==========================================
+// 💸 SECTION 9 — Prestations à charge du propriétaire
+// ==========================================
+if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
+
+  const TABLE_FONT = 9;
+  const ROW_H = 28;
+  const HEADER_H = 30;
+  const CELL_PADDING = 6;
+  let y = doc.y + 45;
+
+  // 🔹 Titre principal
+  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
+    .text(
+      "9 – Liste des prestations à charge du propriétaire",
+      MARGIN_X,
+      y,
+      { width: PAGE_W - 2 * MARGIN_X }
+    );
+  y = doc.y + 25;
+
+  const checkPageBreak = (needed = 50) => {
+    if (y + needed > MAX_PAGE_HEIGHT) {
+      drawFooter(doc);
+      doc.addPage();
+      y = PAGE_MARGIN_TOP;
+    }
+  };
+
+  // ✅ Table structure
+  const tableW = PAGE_W - 2 * MARGIN_X;
+  const colW = [
+    Math.floor(tableW * 0.22),
+    Math.floor(tableW * 0.22),
+    Math.floor(tableW * 0.24),
+    Math.floor(tableW * 0.16),
+    tableW - Math.floor(tableW * 0.22) * 2 - Math.floor(tableW * 0.24) - Math.floor(tableW * 0.16)
+  ];
+
+  const colX = [
+    MARGIN_X,
+    MARGIN_X + colW[0],
+    MARGIN_X + colW[0] + colW[1],
+    MARGIN_X + colW[0] + colW[1] + colW[2],
+    MARGIN_X + colW[0] + colW[1] + colW[2] + colW[3]
+  ];
+
+  for (const task of data.owner_tasks) {
+
+    // 🟧 Localisation affichée avant chaque groupe
+    checkPageBreak(40);
+    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+      .text(task.location || "-", MARGIN_X, y);
+    y = doc.y + 10;
+
+    if (!task.elements || task.elements.length === 0) continue;
+
+    // 🟦 Header du tableau
+    checkPageBreak(HEADER_H);
+    doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
+    doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
+
+    ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"]
+      .forEach((h, i) => {
+        doc.text(h, colX[i] + CELL_PADDING, y + 8, {
+          width: colW[i] - 2 * CELL_PADDING
+        });
+      });
+
+    y += HEADER_H;
+
+    // 🧩 Rows
+    let index = 0;
+    for (const el of task.elements) {
+      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
+      checkPageBreak(ROW_H);
+
+      const values = [
+        el.element || "—",
+        el.defect || "—",
+        el.comment || "—",
+        el.price_ht ? `${el.price_ht}€` : "—",
+        el.price_ttc ? `${el.price_ttc}€` : "—"
+      ];
+
+      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+
+      values.forEach((v, i) => {
+        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+          width: colW[i] - 2 * CELL_PADDING
+        });
+      });
+
+      y += ROW_H;
+      index++;
+    }
+
+    y += 18;
+  }
+
+  drawFooter(doc);
+}
+
 
 
 
