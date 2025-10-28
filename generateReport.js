@@ -65,7 +65,6 @@ const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 // Polices
 const REG = "Helvetica";
 const BOLD = "Helvetica-Bold";
-const MEDIUM = "Helvetica-Medium";
 
 
 
@@ -715,7 +714,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
       // 🔹 Élément
       checkPageBreak(30);
-      doc.font(MEDIUM).fontSize(10).fillColor(TITLE_COLOR)
+      doc.font(BOLD).fontSize(10).fillColor(TITLE_COLOR)
         .text(el.element || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
@@ -836,7 +835,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     // 🟧 Localisation affichée avant chaque groupe
     checkPageBreak(40);
-    doc.font(MEDIUM).fontSize(10).fillColor(ORANGE)
+    doc.font(BOLD).fontSize(10).fillColor(ORANGE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 10;
 
