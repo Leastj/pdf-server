@@ -65,7 +65,7 @@ const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 // Polices
 const REG = "Helvetica";
 const BOLD = "Helvetica-Bold";
-const MEDIUM = "Hervetica-Medium";
+const MEDIUM = "Helvetica-Medium";
 
 
 
