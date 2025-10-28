@@ -858,13 +858,13 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
       const rowColor = index % 2 === 0 ? GRAY_BG : "white";
       checkPageBreak(ROW_H);
 
-      const values = [
-        el.element || "—",
-        el.defect || "—",
-        el.comment || "—",
-        el.price_ht ? `${el.price_ht}€` : "—",
-        el.price_ttc ? `${el.price_ttc}€` : "—"
-      ];
+const values = [
+  def.defect || "—",
+  def.comment || "—",
+  def.max_due_date || "—",
+  def.completion_date || "—"
+];
+
 
       doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
       doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
