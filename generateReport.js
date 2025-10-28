@@ -651,7 +651,8 @@ try {
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
 if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) {
-
+  
+  const TITLE_COLOR = BLUE
   const TABLE_FONT = 9;
   const ROW_H = 28;
   const HEADER_H = 30;
