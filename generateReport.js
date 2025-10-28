@@ -39,24 +39,22 @@ async function generateReport(data) {
   // ✅ On crée toujours un nouveau document PDF pour chaque rapport
   const doc = new PDFDocument({ size: "A4", margin: 40 });
 
-  // Dimensions dynamiques de la page PDF
-  const PAGE_W = doc.page.width;
-  const PAGE_H = doc.page.height;
+const TITLE_COLOR = '#1E3A8A'; // bleu principal titres
+const ORANGE = '#F97316';      // orange uniforme
+const GRAY_BG = '#F9FAFB';     // gris clair tableau
+const GRAY = '#F5F5F5';
+const BLUE = '#144176';
+const PANEL = '#FCFCFC';
 
-  // 🎨 Couleurs globales
-  const BLUE = "#144176";
-  const ORANGE = "#f97415";
-  const GRAY = "#f5f5f5";
-  const PANEL = "#fcfcfc";
+const MARGIN_X = 50;
+const PAGE_MARGIN_TOP = 60;
+const PAGE_MARGIN_BOTTOM = 80;
+const PAGE_W = doc.page.width;
+const PAGE_H = doc.page.height;
+const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 
-  // 📐 Marges et positions
-  const LEFT = 40;
-  const RIGHT_COL_X = LEFT + 320;
-  const RIGHT_COL_W = 202;
-
-  // 🖋️ Polices
-  const REG = "Helvetica";
-  const BOLD = "Helvetica-Bold";
+const REG = "Helvetica";
+const BOLD = "Helvetica-Bold";
 
 
   // =====================
@@ -651,8 +649,8 @@ try {
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
 if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) {
-  
-  const TITLE_COLOR = BLUE
+
+ 
   const TABLE_FONT = 9;
   const ROW_H = 28;
   const HEADER_H = 30;
