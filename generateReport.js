@@ -852,32 +852,37 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     y += HEADER_H;
 
-    // 🧩 Rows
-    let index = 0;
-    for (const el of task.elements) {
-      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-      checkPageBreak(ROW_H);
+// 🧩 Lignes dynamiques
+let rowIndex = 0;
+for (const def of defects) {
+  const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
+  checkPageBreak(ROW_H);
 
-const values = [
-  def.defect || "—",
-  def.comment || "—",
-  def.max_due_date || "—",
-  def.completion_date || "—"
-];
+  doc.save()
+    .fillColor(rowColor)
+    .rect(MARGIN_X, y, tableW, ROW_H)
+    .fill()
+    .restore();
 
+  doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
-      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+  const values = [
+    def.defect || "—",
+    def.comment || "—",
+    def.max_due_date || "—",
+    def.completion_date || "—"
+  ];
 
-      values.forEach((v, i) => {
-        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-          width: colW[i] - 2 * CELL_PADDING
-        });
-      });
+  values.forEach((v, i) => {
+    doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+      width: colW[i] - CELL_PADDING * 2
+    });
+  });
 
-      y += ROW_H;
-      index++;
-    }
+  y += ROW_H;
+  rowIndex++;
+}
+
 
     y += 18;
   }
