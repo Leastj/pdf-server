@@ -681,7 +681,9 @@ try {
 // ==========================================
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
+
 if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
+
   const TITLE_COLOR = '#1E3A8A';
   const ORANGE = '#F97316';
   const GRAY_BG = '#F9FAFB';
@@ -1050,73 +1052,74 @@ if (y > PAGE_H - 200) {
 // ==========================================
 // 🔚 SECTION 11 — Clôture du rapport
 // ==========================================
-{
-  const TITLE_COLOR = '#1E3A8A';
-  const ORANGE = '#F97316';
-  const MARGIN_X = 50;
-  const PAGE_W = doc.page.width;
+const TITLE_COLOR = '#1E3A8A';
+const MARGIN_X = 50;
 
-  // ✅ On sécurise la position de départ
-  let y = (typeof doc.y !== "undefined" ? doc.y : 60) + 60;
-
-  // 🟧 Titre de la section
-  doc
-    .font(BOLD)
-    .fontSize(13)
-    .fillColor(ORANGE)
-    .text('CLÔTURE', MARGIN_X, y);
-  y += 25;
-
-  // 💬 Texte de conclusion
-  const closureText = `Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,`;
-  doc
-    .font(REG)
-    .fontSize(11)
-    .fillColor(TITLE_COLOR)
-    .text(closureText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
-  y += 40;
-
-  // Formule de politesse
-  doc
-    .font(REG)
-    .fontSize(11)
-    .fillColor(TITLE_COLOR)
-    .text('Cordialement,', MARGIN_X, y);
-  y += 35;
-
-  // Signature
-  doc
-    .font(REG)
-    .fontSize(11)
-    .fillColor(TITLE_COLOR)
-    .text('Fait à [Ville], le [Date]', MARGIN_X, y);
-  y += 35;
-
-  doc
-    .font(REG)
-    .fontSize(11)
-    .fillColor(TITLE_COLOR)
-    .text('Pour E C I', MARGIN_X, y);
-  y += 25;
-
-  // Nom du signataire
-  doc
-    .font(BOLD)
-    .fontSize(11)
-    .fillColor(TITLE_COLOR)
-    .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
+// ✅ Si y n'existe pas encore, on le crée maintenant
+if (typeof y === 'undefined') {
+  y = doc.y || 60;
+} else {
+  y += 60;
 }
 
-// ======================
-// FIN DU DOCUMENT
-// ======================
+// 🟧 Titre de la section
+doc
+  .font(BOLD)
+  .fontSize(13)
+  .fillColor(ORANGE)
+  .text('CLÔTURE', MARGIN_X, y);
+y += 25;
+
+// 💬 Texte de conclusion
+const closureText = `Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,`;
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text(closureText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+y += 40;
+
+// Formule de politesse
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Cordialement,', MARGIN_X, y);
+y += 35;
+
+// Signature
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Fait à [Ville], le [Date]', MARGIN_X, y);
+y += 35;
+
+doc
+  .font(REG)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Pour E C I', MARGIN_X, y);
+y += 25;
+
+// Nom du signataire
+doc
+  .font(BOLD)
+  .fontSize(11)
+  .fillColor(TITLE_COLOR)
+  .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
+
+// ✅ Footer + Pagination
 drawFooter(doc);
 addPageNumbers(doc);
+
+// ✅ Fin du document
 doc.end();
 return doc;
 }
 
 module.exports = generateReport;
+
 
 // ============================
 // Exemple de données
