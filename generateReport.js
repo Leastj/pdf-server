@@ -65,6 +65,7 @@ const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 // Polices
 const REG = "Helvetica";
 const BOLD = "Helvetica-Bold";
+const MEDIUM = "Hervetica-Medium";
 
 
 
@@ -669,7 +670,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
   let y = doc.y + 40;
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
     .text(
       "8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat",
       MARGIN_X,
@@ -706,7 +707,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
     // 🟧 Localisation
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+    doc.font(BOLD).fontSize(10).fillColor(ORANGE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 12;
 
@@ -714,7 +715,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
       // 🔹 Élément
       checkPageBreak(30);
-      doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
+      doc.font(MEDIUM).fontSize(10).fillColor(TITLE_COLOR)
         .text(el.element || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
@@ -796,7 +797,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(12).fillColor(ORANGE)
     .text(
       "9 – Liste des prestations à charge du propriétaire",
       MARGIN_X,
@@ -835,7 +836,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
 
     // 🟧 Localisation affichée avant chaque groupe
     checkPageBreak(40);
-    doc.font(BOLD).fontSize(14).fillColor(ORANGE)
+    doc.font(MEDIUM).fontSize(10).fillColor(ORANGE)
       .text(task.location || "-", MARGIN_X, y);
     y = doc.y + 10;
 
