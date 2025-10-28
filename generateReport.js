@@ -678,6 +678,23 @@ try {
 
   drawFooter(doc);
 
+  // Position initiale du curseur
+let y = doc.y || 60;
+
+// Gestion du saut de page unique
+const PAGE_MARGIN_TOP = 60;
+const PAGE_MARGIN_BOTTOM = 80;
+const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
+
+function checkPageBreak(estimatedHeight = 100) {
+  if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
+    drawFooter(doc);
+    doc.addPage();
+    y = PAGE_MARGIN_TOP;
+  }
+}
+
+
 // ==========================================
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
@@ -694,15 +711,6 @@ if (data.maintenance_tasks && data.maintenance_tasks.length > 0) {
   const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
 
  
-  // --- Saut de page (une seule déclaration)
-let y = doc.y + 35; // ou la valeur que tu veux initialiser
-
-const checkPageBreak = (estimatedHeight = 100) => {
-  if (y + estimatedHeight > MAX_PAGE_HEIGHT) {
-    doc.addPage();
-    y = PAGE_MARGIN_TOP;
-  }
-};
 
   // --- Titre principal
   const titleText =
@@ -1052,15 +1060,16 @@ if (y > PAGE_H - 200) {
 // ==========================================
 // 🔚 SECTION 11 — Clôture du rapport
 // ==========================================
-const TITLE_COLOR = '#1E3A8A';
-const MARGIN_X = 50;
+checkPageBreak(200); // espace minimum requis
+y += 30;
 
-// ✅ Si y n'existe pas encore, on le crée maintenant
-if (typeof y === 'undefined') {
-  y = doc.y || 60;
-} else {
-  y += 60;
-}
+// 🟧 Titre de la section
+doc
+  .font(BOLD)
+  .fontSize(13)
+  .fillColor(ORANGE)
+  .text('CLÔTURE', 50, y);
+y += 25;
 
 // 🟧 Titre de la section
 doc
@@ -1109,12 +1118,10 @@ doc
   .fillColor(TITLE_COLOR)
   .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
 
-// ✅ Footer + Pagination
 drawFooter(doc);
 addPageNumbers(doc);
-
-// ✅ Fin du document
 doc.end();
+
 return doc;
 }
 
