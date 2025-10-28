@@ -85,6 +85,8 @@ doc.on('pageAdded', () => {
   const RIGHT_COL_X = LEFT + 320;
   const RIGHT_COL_W = 202;
 
+  
+
   // 🖋️ Polices
   const REG = "Helvetica";
   const BOLD = "Helvetica-Bold";
@@ -682,6 +684,7 @@ try {
 let y = doc.y || 60;
 
 // Gestion du saut de page unique
+const MARGIN_X = 50;
 const PAGE_MARGIN_TOP = 60;
 const PAGE_MARGIN_BOTTOM = 80;
 const MAX_PAGE_HEIGHT = PAGE_H - PAGE_MARGIN_BOTTOM;
@@ -1060,6 +1063,7 @@ if (y > PAGE_H - 200) {
 // ==========================================
 // 🔚 SECTION 11 — Clôture du rapport
 // ==========================================
+
 checkPageBreak(200); // espace minimum requis
 y += 30;
 
@@ -1068,16 +1072,8 @@ doc
   .font(BOLD)
   .fontSize(13)
   .fillColor(ORANGE)
-  .text('CLÔTURE', 50, y);
-y += 25;
-
-// 🟧 Titre de la section
-doc
-  .font(BOLD)
-  .fontSize(13)
-  .fillColor(ORANGE)
   .text('CLÔTURE', MARGIN_X, y);
-y += 25;
+y += 35;
 
 // 💬 Texte de conclusion
 const closureText = `Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,`;
@@ -1086,43 +1082,32 @@ doc
   .fontSize(11)
   .fillColor(TITLE_COLOR)
   .text(closureText, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
-y += 40;
+y += 45;
 
 // Formule de politesse
-doc
-  .font(REG)
-  .fontSize(11)
-  .fillColor(TITLE_COLOR)
+doc.font(REG).fontSize(11).fillColor(TITLE_COLOR)
   .text('Cordialement,', MARGIN_X, y);
 y += 35;
 
 // Signature
-doc
-  .font(REG)
-  .fontSize(11)
-  .fillColor(TITLE_COLOR)
+doc.font(REG).fontSize(11).fillColor(TITLE_COLOR)
   .text('Fait à [Ville], le [Date]', MARGIN_X, y);
 y += 35;
 
-doc
-  .font(REG)
-  .fontSize(11)
-  .fillColor(TITLE_COLOR)
+doc.font(REG).fontSize(11).fillColor(TITLE_COLOR)
   .text('Pour E C I', MARGIN_X, y);
 y += 25;
 
 // Nom du signataire
-doc
-  .font(BOLD)
-  .fontSize(11)
-  .fillColor(TITLE_COLOR)
+doc.font(BOLD).fontSize(11).fillColor(TITLE_COLOR)
   .text('Pierre-Jean SAUTJEAU', MARGIN_X, y);
 
+// ✅ Footer et pagination en toute fin
 drawFooter(doc);
 addPageNumbers(doc);
 doc.end();
-
 return doc;
+
 }
 
 module.exports = generateReport;
