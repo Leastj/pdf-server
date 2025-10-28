@@ -669,7 +669,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
   let y = doc.y + 40;
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
+  doc.font(BOLD).fontSize(14).fillColor(ORANGE)
     .text(
       "8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat",
       MARGIN_X,
@@ -796,7 +796,7 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   
 
   // 🔹 Titre principal
-  doc.font(BOLD).fontSize(18).fillColor(TITLE_COLOR)
+  doc.font(BOLD).fontSize(14).fillColor(ORANGE)
     .text(
       "9 – Liste des prestations à charge du propriétaire",
       MARGIN_X,
