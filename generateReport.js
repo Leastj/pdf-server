@@ -658,7 +658,12 @@ try {
 /// ==========================================
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
+
+
 if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) {
+
+  console.log(JSON.stringify(data.maintenance_tasks, null, 2));
+
 
   const TABLE_FONT = 9;
   const ROW_H = 28;
