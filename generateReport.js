@@ -726,30 +726,33 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
 
       y += HEADER_H;
 
-      // 🧩 Rows
-      let rowIndex = 0;
-      for (const def of defects) {
-        checkPageBreak(ROW_H);
-        const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
-        doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+// 🧩 Lignes dynamiques
+let rowIndex = 0;
+for (const def of defects) {
+  const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
+  checkPageBreak(ROW_H);
 
-        doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+  doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+  doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-        // ✅ MAPPING DATAS CORRECT
-        const values = [
-          def.name || "—",
-          def.comment || "—",
-          def.max_due_date || "—",
-          def.completion_date || "—"
-        ];
+  const values = [
+    def.defect || "—",            // ✅ Défaut correct
+    def.comment || "—",           // ✅ Commentaire
+    def.max_due_date || "—",      // ✅ Délai prévu
+    def.completion_date || "—"    // ✅ Date intervention
+  ];
 
-        values.forEach((v, i) =>
-          doc.text(v, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - CELL_PADDING * 2 })
-        );
+  values.forEach((v, i) => {
+    doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+      width: colW[i] - CELL_PADDING * 2,
+      align: "center"
+    });
+  });
 
-        y += ROW_H;
-        rowIndex++;
-      }
+  y += ROW_H;
+  rowIndex++;
+}
+
 
       y += 15;
     }
