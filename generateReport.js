@@ -887,6 +887,109 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
   drawFooter(doc);
 }
 
+// ==========================================
+// 🔧 SECTION 10 — Préconisation modernisation & sécurité
+// ==========================================
+if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length > 0) {
+
+  const TABLE_FONT = 9;
+  const ROW_H = 28;
+  const HEADER_H = 30;
+  const CELL_PADDING = 6;
+  let y = doc.y + 45;
+
+  // 🔹 Titre principal
+  doc.font(BOLD).fontSize(12).fillColor(BLUE)
+    .text(
+      "10 – Préconisation de modernisation et de sécurité datés à charge du propriétaire",
+      MARGIN_X,
+      y,
+      { width: PAGE_W - 2 * MARGIN_X }
+    );
+  y = doc.y + 25;
+
+  const checkPageBreak = (needed = 50) => {
+    if (y + needed > MAX_PAGE_HEIGHT) {
+      drawFooter(doc);
+      doc.addPage();
+      y = PAGE_MARGIN_TOP;
+    }
+  };
+
+  // ✅ Table structure
+  const tableW = PAGE_W - 2 * MARGIN_X;
+  const colW = [
+    Math.floor(tableW * 0.22),
+    Math.floor(tableW * 0.22),
+    Math.floor(tableW * 0.24),
+    Math.floor(tableW * 0.16),
+    tableW - Math.floor(tableW * 0.22) * 2 - Math.floor(tableW * 0.24) - Math.floor(tableW * 0.16)
+  ];
+
+  const colX = [
+    MARGIN_X,
+    MARGIN_X + colW[0],
+    MARGIN_X + colW[0] + colW[1],
+    MARGIN_X + colW[0] + colW[1] + colW[2],
+    MARGIN_X + colW[0] + colW[1] + colW[2] + colW[3]
+  ];
+
+  for (const task of data.modernization_tasks) {
+
+    // 🟧 Localisation affichée
+    checkPageBreak(40);
+    doc.font(REG).fontSize(10).fillColor(BLUE)
+      .text(task.location || "-", MARGIN_X, y);
+    y = doc.y + 10;
+
+    if (!Array.isArray(task.elements) || task.elements.length === 0) continue;
+
+    // 🟦 Header du tableau
+    checkPageBreak(HEADER_H);
+    doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
+    doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
+
+    ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"]
+      .forEach((h, i) => {
+        doc.text(h, colX[i] + CELL_PADDING, y + 8, {
+          width: colW[i] - 2 * CELL_PADDING
+        });
+      });
+
+    y += HEADER_H;
+
+    // 🧩 Rows dynamiques
+    let index = 0;
+    for (const el of task.elements) {
+      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
+      checkPageBreak(ROW_H);
+
+      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+
+      const values = [
+        el.element || "—",
+        el.defect || "—",
+        el.comment || "—",
+        el.cost_ht ? `${el.cost_ht}€` : "—",
+        el.cost_ttc ? `${el.cost_ttc}€` : "—"
+      ];
+
+      values.forEach((v, i) => {
+        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
+          width: colW[i] - 2 * CELL_PADDING
+        });
+      });
+
+      y += ROW_H;
+      index++;
+    }
+
+    y += 18;
+  }
+
+  drawFooter(doc);
+}
 
 
 
