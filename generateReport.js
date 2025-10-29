@@ -655,29 +655,25 @@ try {
 
   drawFooter(doc);
 
-// ==========================================
+/// ==========================================
 // 🧰 SECTION 8 — Prestations de maintenance
 // ==========================================
 if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) {
 
- 
   const TABLE_FONT = 9;
   const ROW_H = 28;
   const HEADER_H = 30;
   const CELL_PADDING = 6;
   let y = doc.y + 40;
 
-  // 🔹 Titre principal
+  // 🔹 Titre
   doc.font(BOLD).fontSize(12).fillColor(BLUE)
     .text(
       "8 – Liste des prestations dues par le prestataire de maintenance dans le cadre de son contrat",
-      MARGIN_X,
-      y,
-      { width: PAGE_W - 2 * MARGIN_X }
+      MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X }
     );
   y = doc.y + 25;
 
-  // Vérifie espace disponible
   const checkPageBreak = (needed = 50) => {
     if (y + needed > MAX_PAGE_HEIGHT) {
       drawFooter(doc);
@@ -686,14 +682,8 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
     }
   };
 
-  // ✅ Largeur utile du tableau
   const tableW = PAGE_W - 2 * MARGIN_X;
-  const colW = [
-    Math.floor(tableW * 0.25),
-    Math.floor(tableW * 0.25),
-    Math.floor(tableW * 0.25),
-    tableW - Math.floor(tableW * 0.25) * 3
-  ];
+  const colW = [tableW * 0.25, tableW * 0.25, tableW * 0.25, tableW * 0.25];
   const colX = [
     MARGIN_X,
     MARGIN_X + colW[0],
@@ -704,81 +694,65 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
   for (const task of data.maintenance_tasks) {
 
     // 🟧 Localisation
-    checkPageBreak(40);
+    checkPageBreak(30);
     doc.font(BOLD).fontSize(10).fillColor(BLUE)
       .text(task.location || "-", MARGIN_X, y);
-    y = doc.y + 12;
+    y = doc.y + 10;
 
     for (const el of task.elements || []) {
 
-      // 🔹 Élément
-      checkPageBreak(30);
-      doc.font(REG).fontSize(10).fillColor(TITLE_COLOR)
-        .text(el.element || "-", MARGIN_X + 10, y);
+      // 🔹 Élément (✅ CORRECT)
+      checkPageBreak(20);
+      doc.font(REG).fontSize(10).fillColor(BLUE)
+        .text(el.name || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
-      const defects = Array.isArray(el.defects) ? el.defects : [];
-
-
+      const defects = el.defects || [];
       if (!defects.length) continue;
 
-// 🟦 En-têtes tableau
-checkPageBreak(HEADER_H);
-doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
-doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
+      // 🟦 Header
+      checkPageBreak(HEADER_H);
+      doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
+      doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white")
+        .text("Défaut", colX[0] + CELL_PADDING, y + 8)
+        .text("Commentaire", colX[1] + CELL_PADDING, y + 8)
+        .text("Délai souhaité", colX[2] + CELL_PADDING, y + 8)
+        .text("Date effective", colX[3] + CELL_PADDING, y + 8);
 
-// ✅ Libellés fixés + largeur conforme
-const headers = [
-  "Défaut",
-  "Commentaire",
-  "Date limite prévue pour correction",
-  "Date réelle d’intervention"
-];
+      y += HEADER_H;
 
-headers.forEach((h, i) => {
-  doc.text(h, colX[i] + CELL_PADDING, y + 7, {
-    width: colW[i] - CELL_PADDING * 2,
-    align: "center"
-  });
-});
+      // 🧩 Rows
+      let rowIndex = 0;
+      for (const def of defects) {
+        checkPageBreak(ROW_H);
+        const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
+        doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
 
-y += HEADER_H;
+        doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-// 🧩 Lignes dynamiques
-let rowIndex = 0;
-for (const def of defects) {
-  const rowColor = rowIndex % 2 === 0 ? GRAY_BG : "white";
-  checkPageBreak(ROW_H);
+        // ✅ MAPPING DATAS CORRECT
+        const values = [
+          def.name || "—",
+          def.comment || "—",
+          def.max_due_date || "—",
+          def.completion_date || "—"
+        ];
 
-  doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
-  doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+        values.forEach((v, i) =>
+          doc.text(v, colX[i] + CELL_PADDING, y + 8, { width: colW[i] - CELL_PADDING * 2 })
+        );
 
-  const values = [
-    def.defect || "—",
-    def.comment || "—",
-    def.max_due_date || "—",
-    def.completion_date || "—"
-  ];
+        y += ROW_H;
+        rowIndex++;
+      }
 
-  values.forEach((v, i) => {
-    doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-      width: colW[i] - CELL_PADDING * 2,
-      align: "center"
-    });
-  });
-
-  y += ROW_H;
-  rowIndex++;
-}
-
-
-      y += 18; // espace avant élément suivant
+      y += 15;
     }
 
-    y += 20; // espace avant localisation suivante
+    y += 20;
   }
 
-  drawFooter(doc); // fin de section
+  drawFooter(doc);
 }
 
 // ==========================================
