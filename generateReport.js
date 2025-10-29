@@ -1043,7 +1043,7 @@ if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length >
     // 🟧 Localisation + délai
     if (el.location || el.delay) {
       checkPageBreak(40);
-      doc.font(BOLD).fontSize(11).fillColor(ORANGE)
+      doc.font(BOLD).fontSize(11).fillColor(BLUE)
         .text(el.location || "-", MARGIN_X, y);
 
       if (el.delay) {
