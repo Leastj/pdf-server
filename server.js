@@ -15,10 +15,12 @@ const app = express();
 // ⚙️ FIX Render + CORS + Figma
 // ==========================
 const allowedOrigins = [
-  "https://lint-shop-36442167.figma.site", // ton front Figma
-  "http://localhost:5173",                 // local
-  "https://pdf-server-qimr.onrender.com"   // ton backend Render
+  "https://lint-shop-36442167.figma.site",
+  "http://localhost:5173",
+  "https://pdf-server-qimr.onrender.com",
+  "https://auditlift.e-c-i.fr" // ✅ Ajout du nouveau front production
 ];
+
 
 // Middleware personnalisé pour CORS (plus fiable que cors())
 app.use((req, res, next) => {
