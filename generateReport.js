@@ -940,118 +940,15 @@ if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length >
 
     y += HEADER_H;
 
-    // 🧩 Rows dynamiques
-    let index = 0;
-    for (const el of task.elements) {
-      const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-      checkPageBreak(ROW_H);
+// 🧩 Rows dynamiques
+let index = 0;
+for (const el of task.elements) {
+  const defects = Array.isArray(el.defects) ? el.defects : [];
 
-      doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
-      doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
+  if (!defects.length) continue;
 
-      const values = [
-        el.element || "—",
-        el.defect || "—",
-        el.comment || "—",
-        el.cost_ht ? `${el.cost_ht}€` : "—",
-        el.cost_ttc ? `${el.cost_ttc}€` : "—"
-      ];
-
-      values.forEach((v, i) => {
-        doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-          width: colW[i] - 2 * CELL_PADDING
-        });
-      });
-
-      y += ROW_H;
-      index++;
-    }
-
-    y += 18;
-  }
-
-  drawFooter(doc);
-}
-
-// ==========================================
-// 🔧 SECTION 10 — Préconisation de modernisation datées
-// ==========================================
-if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length > 0) {
-
-  const TABLE_FONT = 9;
-  const ROW_H = 28;
-  const HEADER_H = 30;
-  const CELL_PADDING = 6;
-  let y = doc.y + 40;
-
-  // 🔹 Titre principal
-  doc.font(BOLD).fontSize(12).fillColor(TITLE_COLOR)
-    .text(
-      "10 – Préconisation de modernisation et de sécurité datés à charge du propriétaire",
-      MARGIN_X,
-      y,
-      { width: PAGE_W - 2 * MARGIN_X }
-    );
-  y = doc.y + 25;
-
-  const checkPageBreak = (needed = 50) => {
-    if (y + needed > MAX_PAGE_HEIGHT) {
-      drawFooter(doc);
-      doc.addPage();
-      y = PAGE_MARGIN_TOP;
-    }
-  };
-
-  // ✅ Structure tableau
-  const tableW = PAGE_W - 2 * MARGIN_X;
-  const colW = [
-    Math.floor(tableW * 0.22),
-    Math.floor(tableW * 0.22),
-    Math.floor(tableW * 0.25),
-    Math.floor(tableW * 0.15),
-    tableW - Math.floor(tableW * 0.22) * 2 - Math.floor(tableW * 0.25) - Math.floor(tableW * 0.15)
-  ];
-
-  const colX = [
-    MARGIN_X,
-    MARGIN_X + colW[0],
-    MARGIN_X + colW[0] + colW[1],
-    MARGIN_X + colW[0] + colW[1] + colW[2],
-    MARGIN_X + colW[0] + colW[1] + colW[2] + colW[3]
-  ];
-
-  for (const el of data.modernization_tasks) {
-
-    // 🟧 Localisation + délai
-    if (el.location || el.delay) {
-      checkPageBreak(40);
-      doc.font(BOLD).fontSize(11).fillColor(BLUE)
-        .text(el.location || "-", MARGIN_X, y);
-
-      if (el.delay) {
-        doc.font(REG).fontSize(10).fillColor("#1F2937")
-          .text(`Délai recommandé : ${el.delay}`, MARGIN_X + 15, doc.y + 5);
-      }
-      y = doc.y + 10;
-    }
-
-    // 🟦 En-tête tableau
-    checkPageBreak(HEADER_H);
-    doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
-    doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
-
-    ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"]
-      .forEach((h, i) => {
-        doc.text(h, colX[i] + CELL_PADDING, y + 8, {
-          width: colW[i] - 2 * CELL_PADDING,
-          align: "center"
-        });
-      });
-
-    y += HEADER_H;
-
-    // 🧩 Lignes valeurs
-    const rowColor = GRAY_BG;
+  for (const def of defects) {
+    const rowColor = index % 2 === 0 ? GRAY_BG : "white";
     checkPageBreak(ROW_H);
 
     doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
@@ -1059,10 +956,10 @@ if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length >
 
     const values = [
       el.element || "—",
-      el.defect || "—",
-      el.comment || "—",
-      el.cost_ht ? `${el.cost_ht} €` : "—",
-      el.cost_ttc ? `${el.cost_ttc} €` : "—"
+      def.defect || "—",
+      def.comment || "—",
+      def.estimatedAmountHT ? `${def.estimatedAmountHT}€` : "—",
+      def.estimatedAmountTTC ? `${def.estimatedAmountTTC}€` : "—"
     ];
 
     values.forEach((v, i) => {
@@ -1072,11 +969,19 @@ if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length >
       });
     });
 
-    y += ROW_H + 12;
+    y += ROW_H;
+    index++;
+  }
+}
+
+y += 18;
+
   }
 
   drawFooter(doc);
 }
+
+
 
 
   // ======================
