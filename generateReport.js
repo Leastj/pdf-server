@@ -949,32 +949,54 @@ for (const el of task.elements) {
 
   for (const def of defects) {
     const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-    checkPageBreak(ROW_H);
+    checkPageBreak(ROW_H + 12);
 
-    doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H).fill().restore();
+    doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H + 12).fill().restore();
+
+    // Élément
+    doc.font(REG)
+      .fontSize(TABLE_FONT)
+      .fillColor("#1F2937")
+      .text(el.element || "—", colX[0] + CELL_PADDING, y + 8, {
+        width: colW[0] - 2 * CELL_PADDING
+      });
+
+    // Défaut
+    doc.font(BOLD)
+      .fontSize(TABLE_FONT)
+      .fillColor("#1F2937")
+      .text(def.defect || "—", colX[1] + CELL_PADDING, y + 6, {
+        width: colW[1] - 2 * CELL_PADDING
+      });
+
+    // Commentaire en dessous du défaut (petite typo + gris)
+    doc.font(REG)
+      .fontSize(7)
+      .fillColor("#555")
+      .text(def.comment || "—", colX[1] + CELL_PADDING, doc.y + 2, {
+        width: colW[1] - 2 * CELL_PADDING
+      });
+
+    // Dates
     doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
 
-    const values = [
-      el.element || "—",
-      def.defect || "—",
-      def.comment || "—",
-      def.estimatedAmountHT ? `${def.estimatedAmountHT}€` : "—",
-      def.estimatedAmountTTC ? `${def.estimatedAmountTTC}€` : "—"
-    ];
-
-    values.forEach((v, i) => {
-      doc.text(v, colX[i] + CELL_PADDING, y + 8, {
-        width: colW[i] - 2 * CELL_PADDING,
-        align: "center"
-      });
+    doc.text(def.max_due_date || "—", colX[2] + CELL_PADDING, y + 8, {
+      width: colW[2] - 2 * CELL_PADDING,
+      align: "center"
     });
 
-    y += ROW_H;
+    doc.text(def.completion_date || "—", colX[3] + CELL_PADDING, y + 8, {
+      width: colW[3] - 2 * CELL_PADDING,
+      align: "center"
+    });
+
+    y += ROW_H + 12;
     index++;
   }
 }
 
 y += 18;
+
 
   }
 
