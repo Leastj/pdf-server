@@ -949,9 +949,9 @@ for (const el of task.elements) {
 
   for (const def of defects) {
     const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-    checkPageBreak(ROW_H + 12);
+    checkPageBreak(ROW_H + 10);
 
-    doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H + 12).fill().restore();
+    doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H + 10).fill().restore();
 
     // Élément
     doc.font(REG)
@@ -961,7 +961,7 @@ for (const el of task.elements) {
         width: colW[0] - 2 * CELL_PADDING
       });
 
-    // Défaut
+    // Défaut (titre) + Commentaire (en dessous)
     doc.font(BOLD)
       .fontSize(TABLE_FONT)
       .fillColor("#1F2937")
@@ -969,7 +969,6 @@ for (const el of task.elements) {
         width: colW[1] - 2 * CELL_PADDING
       });
 
-    // Commentaire en dessous du défaut (petite typo + gris)
     doc.font(REG)
       .fontSize(7)
       .fillColor("#555")
@@ -977,25 +976,25 @@ for (const el of task.elements) {
         width: colW[1] - 2 * CELL_PADDING
       });
 
-    // Dates
+    // Montant HT
     doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
-
-    doc.text(def.max_due_date || "—", colX[2] + CELL_PADDING, y + 8, {
+    doc.text(def.estimatedAmountHT ? `${def.estimatedAmountHT}€` : "—", colX[2] + CELL_PADDING, y + 8, {
       width: colW[2] - 2 * CELL_PADDING,
       align: "center"
     });
 
-    doc.text(def.completion_date || "—", colX[3] + CELL_PADDING, y + 8, {
+    // Montant TTC
+    doc.text(def.estimatedAmountTTC ? `${def.estimatedAmountTTC}€` : "—", colX[3] + CELL_PADDING, y + 8, {
       width: colW[3] - 2 * CELL_PADDING,
       align: "center"
     });
 
-    y += ROW_H + 12;
+    y += ROW_H + 10;
     index++;
   }
 }
-
 y += 18;
+
 
 
   }
