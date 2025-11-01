@@ -1023,14 +1023,13 @@ y += 15;
 if (data.closure_location || data.closure_date) {
 
   let y = doc.y + 40;
-  checkPageBreak(80);
 
   // 🔹 Titre CLOTURE
   doc.font(BOLD).fontSize(10).fillColor(ORANGE)
     .text("CLOTURE", MARGIN_X, y);
   y = doc.y + 12;
 
-  // ✅ Texte standard
+  // ✅ Texte standard (style comme Figma)
   const closingTexts = [
     "Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,",
     "Cordialement,",
@@ -1040,17 +1039,17 @@ if (data.closure_location || data.closure_date) {
   ];
 
   closingTexts.forEach(txt => {
-    checkPageBreak(20);
-
     doc.font(REG).fontSize(8).fillColor(BLUE)
       .text(txt, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
 
     y = doc.y + 10;
   });
 
-  // ✅ Continue page footer
   doc.moveDown(2);
 }
+
+// ✅ Footer final du PDF
+drawFooter(doc);
 
 
 
