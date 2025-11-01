@@ -709,7 +709,7 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
       // 🔹 Élément (✅ CORRECT)
       checkPageBreak(20);
       doc.font(REG).fontSize(10).fillColor(BLUE)
-        .text(el.name || "-", MARGIN_X + 10, y);
+        .text(el.element || "-", MARGIN_X + 10, y);
       y = doc.y + 10;
 
       const defects = el.defects || [];
@@ -721,8 +721,8 @@ if (Array.isArray(data.maintenance_tasks) && data.maintenance_tasks.length > 0) 
       doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white")
         .text("Défaut", colX[0] + CELL_PADDING, y + 8)
         .text("Commentaire", colX[1] + CELL_PADDING, y + 8)
-        .text("Délai souhaité", colX[2] + CELL_PADDING, y + 8)
-        .text("Date effective", colX[3] + CELL_PADDING, y + 8);
+        .text("Délai maximum de réalisation", colX[2] + CELL_PADDING, y + 8)
+        .text("Date de réalisation", colX[3] + CELL_PADDING, y + 8);
 
       y += HEADER_H;
 
@@ -825,7 +825,14 @@ if (Array.isArray(data.owner_tasks) && data.owner_tasks.length > 0) {
     doc.save().fillColor(TITLE_COLOR).rect(MARGIN_X, y, tableW, HEADER_H).fill().restore();
     doc.font(BOLD).fontSize(TABLE_FONT).fillColor("white");
 
-    const headers = ["Élément", "Défaut", "Commentaire", "Montant HT (€)", "Montant TTC (€)"];
+   const headers = [
+  "Élément",
+  "Défaut",
+  "Commentaire",
+  "Montant estimé des travaux €HT",
+  "Montant estimé des travaux € TTC (tva 10%)"
+];
+
     headers.forEach((h, i) => {
       doc.text(h, colX[i] + CELL_PADDING, y + 8, {
         width: colW[i] - 2 * CELL_PADDING
@@ -940,61 +947,69 @@ if (Array.isArray(data.modernization_tasks) && data.modernization_tasks.length >
 
     y += HEADER_H;
 
-// 🧩 Rows dynamiques
+// 🧩 Rows dynamiques — Section 10 Modernisation
 let index = 0;
 for (const el of task.elements) {
   const defects = Array.isArray(el.defects) ? el.defects : [];
-
   if (!defects.length) continue;
 
   for (const def of defects) {
-    const rowColor = index % 2 === 0 ? GRAY_BG : "white";
-    checkPageBreak(ROW_H + 10);
+    checkPageBreak(ROW_H + 14);
 
-    doc.save().fillColor(rowColor).rect(MARGIN_X, y, tableW, ROW_H + 10).fill().restore();
+    // 🔹 Calcul hauteur réelle du texte élément + défaut+commentaire
+    const hElement = doc.heightOfString(el.element || "—", { width: colW[0] - 2 * CELL_PADDING });
+    const hDefect = doc.heightOfString(def.defect || "—", { width: colW[1] - 2 * CELL_PADDING });
+    const hComment = doc.heightOfString(def.comment || "—", { width: colW[1] - 2 * CELL_PADDING, fontSize: 7 });
 
-    // Élément
-    doc.font(REG)
-      .fontSize(TABLE_FONT)
-      .fillColor("#1F2937")
-      .text(el.element || "—", colX[0] + CELL_PADDING, y + 8, {
+    const finalH = Math.max(ROW_H, hElement + hDefect + hComment + 8);
+
+    // 🟦 Alternance fond de ligne
+    const bg = index % 2 === 0 ? GRAY_BG : "white";
+    doc.save().fillColor(bg).rect(MARGIN_X, y, tableW, finalH).fill().restore();
+
+    // ✅ Colonne 1 — Élément
+    doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937")
+      .text(el.element || "—", colX[0] + CELL_PADDING, y + 6, {
         width: colW[0] - 2 * CELL_PADDING
       });
 
-    // Défaut (titre) + Commentaire (en dessous)
-    doc.font(BOLD)
-      .fontSize(TABLE_FONT)
-      .fillColor("#1F2937")
+    // ✅ Colonne 2 — Défaut + Commentaire
+    doc.font(BOLD).fontSize(TABLE_FONT).fillColor("#1F2937")
       .text(def.defect || "—", colX[1] + CELL_PADDING, y + 6, {
         width: colW[1] - 2 * CELL_PADDING
       });
 
-    doc.font(REG)
-      .fontSize(7)
-      .fillColor("#555")
-      .text(def.comment || "—", colX[1] + CELL_PADDING, doc.y + 2, {
+    doc.font(REG).fontSize(7).fillColor("#555")
+      .text(def.comment || "—", colX[1] + CELL_PADDING, doc.y + 1, {
         width: colW[1] - 2 * CELL_PADDING
       });
 
-    // Montant HT
-    doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937");
-    doc.text(def.estimatedAmountHT ? `${def.estimatedAmountHT}€` : "—", colX[2] + CELL_PADDING, y + 8, {
-      width: colW[2] - 2 * CELL_PADDING,
-      align: "center"
-    });
+    // ✅ Colonne 3 — Délai recommandé
+    doc.font(REG).fontSize(TABLE_FONT).fillColor("#1F2937")
+      .text(task.recommendedDelay || "—", colX[2] + CELL_PADDING, y + 6, {
+        width: colW[2] - 2 * CELL_PADDING,
+        align: "center"
+      });
 
-    // Montant TTC
-    doc.text(def.estimatedAmountTTC ? `${def.estimatedAmountTTC}€` : "—", colX[3] + CELL_PADDING, y + 8, {
+    // ✅ Colonne 4 — Montant HT
+    doc.text(def.estimatedAmountHT ? `${def.estimatedAmountHT}€` : "—",
+      colX[3] + CELL_PADDING, y + 6, {
       width: colW[3] - 2 * CELL_PADDING,
       align: "center"
     });
 
-    y += ROW_H + 10;
+    // ✅ Colonne 5 — Montant TTC
+    doc.text(def.estimatedAmountTTC ? `${def.estimatedAmountTTC}€` : "—",
+      colX[4] + CELL_PADDING, y + 6, {
+      width: colW[4] - 2 * CELL_PADDING,
+      align: "center"
+    });
+
+    y += finalH;
     index++;
   }
 }
-y += 18;
-
+y += 15;
 
 
   }
@@ -1002,6 +1017,40 @@ y += 18;
   drawFooter(doc);
 }
 
+// ==========================================
+// ✅ SECTION 11 — Clôture
+// ==========================================
+if (data.closure_location || data.closure_date) {
+
+  let y = doc.y + 40;
+  checkPageBreak(80);
+
+  // 🔹 Titre CLOTURE
+  doc.font(BOLD).fontSize(10).fillColor(ORANGE)
+    .text("CLOTURE", MARGIN_X, y);
+  y = doc.y + 12;
+
+  // ✅ Texte standard
+  const closingTexts = [
+    "Nous vous souhaitons bonne réception et restons à votre disposition pour tout complément,",
+    "Cordialement,",
+    `Fait à ${data.closure_location || "[          ]"}, le ${data.closure_date || "[          ]"}`,
+    "Pour E C I",
+    "Pierre-Jean SAUTJEAU"
+  ];
+
+  closingTexts.forEach(txt => {
+    checkPageBreak(20);
+
+    doc.font(REG).fontSize(8).fillColor(BLUE)
+      .text(txt, MARGIN_X, y, { width: PAGE_W - 2 * MARGIN_X });
+
+    y = doc.y + 10;
+  });
+
+  // ✅ Continue page footer
+  doc.moveDown(2);
+}
 
 
 
