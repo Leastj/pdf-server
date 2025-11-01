@@ -1025,7 +1025,7 @@ if (data.closure_location || data.closure_date) {
   let y = doc.y + 40;
 
   // 🔹 Titre CLOTURE
-  doc.font(BOLD).fontSize(10).fillColor(ORANGE)
+  doc.font(BOLD).fontSize(10).fillColor(BLUE)
     .text("CLOTURE", MARGIN_X, y);
   y = doc.y + 12;
 
